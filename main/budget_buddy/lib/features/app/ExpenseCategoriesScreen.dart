@@ -1,43 +1,78 @@
 import 'package:flutter/material.dart';
 
+final List<Map<String, dynamic>> expenseCategories = [
+  {"name": "Food", "image": "images/Food.png", "type": "Expense"},
+  {"name": "Shopping", "image": "images/Shopping.png", "type": "Expense"},
+  {
+    "name": "Transportation",
+    "image": "images/Transportation.png",
+    "type": "Expense"
+  },
+  {"name": "Home", "image": "images/Home.png", "type": "Expense"},
+  {
+    "name": "Bills & Fees",
+    "image": "images/Bills & Fees.png",
+    "type": "Expense"
+  },
+  {
+    "name": "Entertainment",
+    "image": "images/Entertainment.png",
+    "type": "Expense"
+  },
+  {"name": "Car", "image": "images/Car.png", "type": "Expense"},
+  {"name": "Travel", "image": "images/Travel.png", "type": "Expense"},
+  {
+    "name": "Family & Personal",
+    "image": "images/Family & Personal.png",
+    "type": "Expense"
+  },
+  {"name": "Health", "image": "images/Health.png", "type": "Expense"},
+  {"name": "Education", "image": "images/Education.png", "type": "Expense"},
+  {"name": "Groceries", "image": "images/Groceries.png", "type": "Expense"},
+  {"name": "Gifts", "image": "images/Gifts.png", "type": "Expense"},
+  {
+    "name": "Sports & Hobbies",
+    "image": "images/Sports & Hobbies.png",
+    "type": "Expense"
+  },
+  {"name": "Beauty", "image": "images/Beauty.png", "type": "Expense"},
+  {"name": "Work", "image": "images/Work.png", "type": "Expense"},
+  {"name": "Other", "image": "images/Other.png", "type": "Expense"},
+  // ... other categories with their corresponding image paths
+];
+
+final List<Map<String, dynamic>> incomeCategories = [
+  {"name": "Salary", "image": "images/Salary.png", "type": "Income"},
+  {"name": "Loan", "image": "images/Loan.png", "type": "Income"},
+  {"name": "Gifts", "image": "images/Gifts.png", "type": "Income"},
+  {"name": "Other", "image": "images/Other.png", "type": "Income"},
+  // ... other income categories with their corresponding image paths
+];
+
 class ExpenseCategoriesScreen extends StatefulWidget {
   @override
   _ExpenseCategoriesScreenState createState() =>
       _ExpenseCategoriesScreenState();
+
+  static String getImagePathForCategory(String categoryName) {
+    // Try to find the category in expense categories
+    var category = expenseCategories
+        .firstWhere((cat) => cat['name'] == categoryName, orElse: () => {});
+
+    // If not found in expense categories, try income categories
+    if (category.isEmpty) {
+      category = incomeCategories
+          .firstWhere((cat) => cat['name'] == categoryName, orElse: () => {});
+    }
+
+    // Return image path if category is found, else return default image path
+    return category.isNotEmpty ? category['image'] : "images/Default.png";
+  }
 }
 
 class _ExpenseCategoriesScreenState extends State<ExpenseCategoriesScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
-
-  final List<Map<String, dynamic>> expenseCategories = [
-    {"name": "Food", "image": "images/Food.png"},
-    {"name": "Shopping", "image": "images/Shopping.png"},
-    {"name": "Transportation", "image": "images/Transportation.png"},
-    {"name": "Home", "image": "images/Home.png"},
-    {"name": "Bills & Fees", "image": "images/Bills & Fees.png"},
-    {"name": "Entertainment", "image": "images/Entertainment.png"},
-    {"name": "Car", "image": "images/Car.png"},
-    {"name": "Travel", "image": "images/Travel.png"},
-    {"name": "Family & Personal", "image": "images/Family & Personal.png"},
-    {"name": "Health", "image": "images/Health.png"},
-    {"name": "Education", "image": "images/Education.png"},
-    {"name": "Groceries", "image": "images/Groceries.png"},
-    {"name": "Gifts", "image": "images/Gifts.png"},
-    {"name": "Sports & Hobbies", "image": "images/Sports & Hobbies.png"},
-    {"name": "Beauty", "image": "images/Beauty.png"},
-    {"name": "Work", "image": "images/Work.png"},
-    {"name": "Other", "image": "images/Other.png"},
-    // ... other categories with their corresponding image paths
-  ];
-
-  final List<Map<String, dynamic>> incomeCategories = [
-    {"name": "Salary", "image": "images/Salary.png"},
-    {"name": "Loan", "image": "images/Loan.png"},
-    {"name": "Gifts", "image": "images/Gifts.png"},
-    {"name": "Other", "image": "images/Other.png"},
-    // ... other income categories with their corresponding image paths
-  ];
 
   @override
   void initState() {
@@ -91,7 +126,11 @@ class _ExpenseCategoriesScreenState extends State<ExpenseCategoriesScreen>
 
         return GestureDetector(
           onTap: () {
-            Navigator.pop(context, categories[index]);
+            Navigator.pop(context, {
+              'name': categories[index]['name'],
+              'type': categories[index]['type'],
+              'image': categories[index]['image']
+            });
           },
           child: Card(
             elevation: 3,

@@ -1,8 +1,11 @@
-import 'package:firebase_core/firebase_core.dart';
+import 'package:budget_buddy/add.dart';
+import 'package:budget_buddy/editExpenseScreen.dart';
+import 'package:budget_buddy/features/app/ExpenseCategoriesScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'expense_model.dart'; // Replace with the path to your Expense model
+import 'expense_model.dart'; // Make sure this path is correct
+import 'package:intl/intl.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -14,7 +17,12 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   DatabaseReference dbRef = FirebaseDatabase.instance.ref().child("expenses");
   List<Expense> expenses = [];
-  String userName = 'User'; // Variable to hold the user's name
+  List<Expense> filteredExpenses = [];
+  String userName = 'User';
+  DateTime selectedDate = DateTime.now();
+  double totalIncome = 0;
+  double totalExpenses = 0;
+  double totalBalance = 0;
 
   @override
   void initState() {
@@ -26,10 +34,8 @@ class _HomeState extends State<Home> {
   void setUserName() {
     var currentUser = FirebaseAuth.instance.currentUser;
     if (currentUser != null) {
-      print("Logged in user: ${currentUser.email}"); // Debug print
       userName = currentUser.displayName ?? 'User';
     } else {
-      print("No user logged in."); // Debug print
       userName = 'User';
     }
   }
@@ -38,28 +44,53 @@ class _HomeState extends State<Home> {
     String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
     dbRef.child(userId).onValue.listen((event) {
       var data = event.snapshot.value;
-
-      // Check if data is a Map and safely cast it
       if (data is Map<dynamic, dynamic>) {
         final expensesData = data.map<String, dynamic>(
           (key, value) => MapEntry(key.toString(), value),
         );
-
         final newExpenses = expensesData.entries
             .map((e) =>
                 Expense.fromJson(Map<String, dynamic>.from(e.value), e.key))
             .toList();
 
+        // Sort expenses by date in descending order
+        newExpenses.sort((a, b) => b.date.compareTo(a.date));
+
         setState(() {
           expenses = newExpenses;
+          filterExpensesByMonth();
         });
       }
     });
   }
 
-  Future<void> removeExpense(String key) async {
-    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
-    await dbRef.child(userId).child(key).remove();
+  void filterExpensesByMonth() {
+    filteredExpenses = expenses.where((expense) {
+      return expense.date.year == selectedDate.year &&
+          expense.date.month == selectedDate.month;
+    }).toList();
+    calculateTotals();
+  }
+
+  void calculateTotals() {
+    totalIncome = filteredExpenses
+        .where((item) => item.type == 'Income')
+        .fold(0, (sum, item) => sum + item.amount);
+    totalExpenses = filteredExpenses
+        .where((item) => item.type == 'Expense')
+        .fold(0, (sum, item) => sum + item.amount);
+    totalBalance = totalIncome - totalExpenses;
+  }
+
+  void changeMonth(bool next) {
+    setState(() {
+      if (next) {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month + 1, 1);
+      } else {
+        selectedDate = DateTime(selectedDate.year, selectedDate.month - 1, 1);
+      }
+      filterExpensesByMonth();
+    });
   }
 
   @override
@@ -69,41 +100,15 @@ class _HomeState extends State<Home> {
         child: CustomScrollView(
           slivers: [
             SliverToBoxAdapter(
-              child: SizedBox(height: 340, child: _head()),
-            ),
-            const SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Transactions History',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 19,
-                        color: Colors.black,
-                      ),
-                    ),
-                    Text(
-                      'See all',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w600,
-                        fontSize: 15,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              child: _head(), // Directly call _head() here
             ),
             SliverList(
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
-                  final history = expenses[index];
-                  return getList(history, index);
+                  final history = filteredExpenses[index];
+                  return _transactionTile(history);
                 },
-                childCount: expenses.length,
+                childCount: filteredExpenses.length,
               ),
             ),
           ],
@@ -112,254 +117,222 @@ class _HomeState extends State<Home> {
     );
   }
 
-  Widget getList(Expense history, int index) {
-    // Fallback key value if history.key is null
-    String keyValue = history.key ?? 'default_key_$index';
+  void removeExpense(String key) async {
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+    await FirebaseDatabase.instance
+        .ref()
+        .child("expenses")
+        .child(userId)
+        .child(key)
+        .remove();
+    listenToExpenses();
+  }
 
-    return Dismissible(
-      key: Key(keyValue),
-      onDismissed: (direction) {
-        // Check if key is not null before calling removeExpense
-        if (history.key != null) {
-          removeExpense(history.key!);
-        }
-      },
-      child: get(index, history),
+  Widget _transactionTile(Expense history) {
+    String imagePath =
+        ExpenseCategoriesScreen.getImagePathForCategory(history.category);
+    String formattedDateTime =
+        DateFormat('dd/MM/yyyy HH:mm').format(history.date);
+
+    return Container(
+      padding: EdgeInsets.symmetric(
+          horizontal: 12.0, vertical: 4.0), // Reduced vertical padding
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              Image.asset(imagePath, height: 40, width: 40),
+              SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(history.category,
+                      style: TextStyle(
+                          fontSize: 16.0, fontWeight: FontWeight.bold)),
+                  Text(formattedDateTime,
+                      style: TextStyle(fontSize: 12.0, color: Colors.grey)),
+                ],
+              ),
+            ],
+          ),
+          Text(
+            '${history.type == 'Income' ? "+" : "-"}\$${history.amount.toStringAsFixed(2)}',
+            style: TextStyle(
+                fontSize: 16.0,
+                fontWeight: FontWeight.bold,
+                color: history.type == 'Income' ? Colors.green : Colors.red),
+          ),
+          PopupMenuButton<String>(
+            onSelected: (String value) {
+              if (value == 'Edit') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          EditExpenseScreen(expense: history)),
+                );
+              } else if (value == 'Delete') {
+                removeExpense(history.key!);
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return {'Edit', 'Delete'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
+            },
+            icon: Icon(Icons.more_vert),
+          ),
+        ],
+      ),
     );
   }
 
-  ListTile get(int index, Expense history) {
-    return ListTile(
-      leading: ClipRRect(
-        borderRadius: BorderRadius.circular(5),
-        child: Image.asset('images/${history.category}.png', height: 40),
-      ),
-      title: Text(
-        history.category,
-        style: TextStyle(
-          fontSize: 17,
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      subtitle: Text(
-        '${history.date.day}/${history.date.month}/${history.date.year}',
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-        ),
-      ),
-      trailing: Text(
-        '\$${history.amount.toStringAsFixed(2)}',
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 19,
-          color: history.type == 'Income' ? Colors.green : Colors.red,
-        ),
-      ),
-    );
+  void removeAllExpenses() {
+    setState(() {
+      expenses.clear(); // Clear the expenses list
+      filteredExpenses.clear(); // Clear the filtered expenses list
+      totalIncome = 0; // Reset total income
+      totalExpenses = 0; // Reset total expenses
+      totalBalance = 0; // Reset total balance
+    });
   }
 
   Widget _head() {
-    // Calculate the total balance, income, and expenses from the Firebase data
-    double totalIncome = expenses
-        .where((item) => item.type == 'Income')
-        .fold(0, (sum, item) => sum + item.amount);
-    double totalExpenses = expenses
-        .where((item) => item.type == 'Expense')
-        .fold(0, (sum, item) => sum + item.amount);
-    double totalBalance = totalIncome - totalExpenses;
-
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Container(
-              width: double.infinity,
-              height: 240,
-              decoration: BoxDecoration(
-                  color: Color(0xff368983),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
-                  )),
-              child: Stack(
-                children: [
-                  Positioned(
-                      top: 35,
-                      left: 340,
-                      child: ClipRRect(
-                          borderRadius: BorderRadius.circular(7),
-                          child: Container(
-                              height: 40,
-                              width: 40,
-                              color: Color.fromRGBO(250, 250, 250, 0.1),
-                              child: Icon(
-                                Icons.notification_add_outlined,
-                                size: 30,
-                                color: Colors.white,
-                              )))),
-                  Padding(
-                    padding: EdgeInsets.only(top: 35, left: 10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Good afternoon',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w500,
-                            fontSize: 16,
-                            color: Color.fromARGB(255, 224, 223, 223),
-                          ),
-                        ),
-                        Text(
-                          userName, // Removed 'const' keyword
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 20,
-                            color: Colors.white,
-                          ),
-                        )
-                      ],
-                    ),
-                  )
-                ],
-              ),
-            ),
-          ],
+    final monthFormatter = DateFormat('MMMM yyyy');
+    return Container(
+      decoration: BoxDecoration(
+        color: Color(0xff368983),
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(20),
+          bottomRight: Radius.circular(20),
         ),
-        Positioned(
-          top: 140,
-          left: 37,
-          child: Container(
-            height: 170,
-            width: 320,
-            decoration: BoxDecoration(
-              boxShadow: const [
-                BoxShadow(
-                  color: Color.fromRGBO(47, 125, 121, 0.3),
-                  offset: Offset(0, 6),
-                  blurRadius: 12,
-                  spreadRadius: 6,
-                )
+      ),
+      child: Column(
+        children: [
+          // Date configuration at the very top
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: <Widget>[
+                IconButton(
+                  icon: Icon(Icons.arrow_back_ios, color: Colors.white),
+                  onPressed: () => changeMonth(false),
+                ),
+                Text(
+                  monthFormatter.format(selectedDate),
+                  style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white),
+                ),
+                IconButton(
+                  icon: Icon(Icons.arrow_forward_ios, color: Colors.white),
+                  onPressed: () => changeMonth(true),
+                ),
               ],
-              color: const Color.fromARGB(255, 47, 125, 121),
-              borderRadius: BorderRadius.circular(15),
             ),
-            child: Column(
+          ),
+          // Total Balance section with date range button
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                SizedBox(height: 10),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         'Total Balance',
                         style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: Colors.white),
                       ),
-                      Icon(
-                        Icons.more_horiz,
-                        color: Colors.white,
-                      )
-                    ],
-                  ),
-                ),
-                SizedBox(height: 7),
-                Padding(
-                  padding: EdgeInsets.only(left: 15),
-                  child: Row(
-                    children: [
+                      SizedBox(height: 7),
                       Text(
                         '£ ${totalBalance.toStringAsFixed(2)}',
                         style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 25,
-                          color: Colors.white,
-                        ),
-                      )
-                    ],
-                  ),
-                ),
-                SizedBox(height: 25),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 15),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          CircleAvatar(
-                            radius: 13,
-                            backgroundColor: Color.fromARGB(255, 85, 145, 141),
-                            child: Icon(Icons.arrow_downward,
-                                color: Colors.white, size: 19),
-                          ),
-                          SizedBox(width: 7),
-                          Text(
-                            'Income',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              color: Color.fromARGB(255, 216, 216, 216),
-                            ),
-                          ),
-                        ],
+                            fontWeight: FontWeight.bold,
+                            fontSize: 25,
+                            color: Colors.white),
                       ),
+                      SizedBox(height: 25),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          CircleAvatar(
-                            radius: 13,
-                            backgroundColor: Color.fromARGB(255, 85, 145, 141),
-                            child: Icon(Icons.arrow_upward,
-                                color: Colors.white, size: 19),
-                          ),
-                          SizedBox(width: 7),
                           Text(
-                            'Expenses',
+                            'Income £ ${totalIncome.toStringAsFixed(2)}',
                             style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 16,
-                              color: Color.fromARGB(255, 216, 216, 216),
-                            ),
+                                fontWeight: FontWeight.w600,
+                                fontSize: 17,
+                                color: Colors.white),
+                          ),
+                          Text(
+                            'Expenses £ ${totalExpenses.toStringAsFixed(2)}',
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                fontSize: 17,
+                                color: Colors.white),
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                SizedBox(width: 7),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 30),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        '£ ${totalIncome.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 17,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        '£ ${totalExpenses.toStringAsFixed(2)}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 17,
-                          color: Colors.white,
-                        ),
-                      )
-                    ],
-                  ),
-                )
               ],
             ),
           ),
-        )
-      ],
+        ],
+      ),
     );
+  }
+
+  void _handleMenuSelection(String choice) {
+    if (choice == 'Select Date Range') {
+      _selectDateRange();
+    }
+  }
+
+  void _selectDateRange() async {
+    // Example: Show a date range picker and then remove expenses
+    DateTimeRange? dateRange = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime(2020), // Adjust as needed
+      lastDate: DateTime.now(),
+      initialDateRange: DateTimeRange(
+        start: DateTime.now().subtract(Duration(days: 7)), // Last week
+        end: DateTime.now(),
+      ),
+    );
+
+    if (dateRange != null) {
+      _removeExpensesInRange(dateRange.start, dateRange.end);
+    }
+  }
+
+  void _removeExpensesInRange(DateTime startDate, DateTime endDate) async {
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+    dbRef.child(userId).get().then((snapshot) {
+      if (snapshot.exists && snapshot.value is Map) {
+        Map data = snapshot.value as Map;
+        data.forEach((key, value) {
+          Expense expense = Expense.fromJson(value, key);
+          if (expense.date.isAfter(startDate) &&
+              expense.date.isBefore(endDate)) {
+            dbRef.child(userId).child(key).remove();
+          }
+        });
+      }
+      listenToExpenses(); // Refresh the expenses list
+    });
   }
 }

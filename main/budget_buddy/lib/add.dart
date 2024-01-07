@@ -7,7 +7,9 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:budget_buddy/features/app/ExpenseCategoriesScreen.dart';
 
 class Add_Screen extends StatefulWidget {
-  const Add_Screen({super.key});
+  final Expense? expense; // Add this line
+
+  const Add_Screen({super.key, this.expense});
 
   @override
   State<Add_Screen> createState() => _Add_ScreenState();
@@ -19,10 +21,27 @@ class _Add_ScreenState extends State<Add_Screen> {
   String? selctedItem;
   String? selctedItemi;
   String? selectedCategory;
-  final TextEditingController expalin_C = TextEditingController();
+  TextEditingController expalin_C = TextEditingController();
   FocusNode ex = FocusNode();
-  final TextEditingController amount_c = TextEditingController();
+  TextEditingController amount_c = TextEditingController();
   FocusNode amount_ = FocusNode();
+  DateTime? selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize controllers and other fields with existing expense data if available
+    expalin_C = TextEditingController(text: widget.expense?.description ?? '');
+    amount_c =
+        TextEditingController(text: widget.expense?.amount.toString() ?? '');
+    selectedCategory = widget.expense?.category ?? '';
+    selctedItemi = widget.expense?.type ?? 'Expense'; // Default to 'Expense'
+    selectedDate = widget.expense?.date ?? DateTime.now();
+    selectedRecurrence = widget.expense?.recurrence ?? 'Never';
+    selectedReminder = widget.expense?.reminder ?? 'Never';
+    // ... Other initializations
+  }
+
   final List<String> _item = [
     "Food",
     "Transfer",
@@ -33,20 +52,19 @@ class _Add_ScreenState extends State<Add_Screen> {
     'Income',
     'Expense',
   ];
-  String? selectedRecurrence = 'Never';
+  String? selectedRecurrence;
+  String? selectedReminder;
   final List<String> recurrenceOptions = [
     'Never',
     'Every Minute',
     'Every Day',
     'Every 3 Days',
-    'Every Week',
+    'Every Week'
   ];
-
-  String? selectedReminder = 'Never';
   final List<String> reminderOptions = [
     'Never',
     '1 Minute Before',
-    '1 Day Before',
+    '1 Day Before'
   ];
 
   Future<void> addExpense(Expense expense) async {
@@ -97,6 +115,113 @@ class _Add_ScreenState extends State<Add_Screen> {
         )));
   }
 
+  void saveExpense() async {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child("expenses");
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+
+    if (widget.expense != null && widget.expense!.key != null) {
+      // Updating an existing expense
+      Expense updatedExpense = Expense(
+        key: widget.expense!.key!, // Asserting non-null
+        category: selectedCategory!,
+        amount: double.parse(amount_c.text),
+        description: expalin_C.text,
+        date: selectedDate!,
+        type: determineType(selectedCategory!), // Add type determination
+        recurrence: selectedRecurrence ?? 'Never',
+        reminder: selectedReminder ?? 'Never',
+      );
+
+      // Debug print
+      print('Updating Expense: ${updatedExpense.toJson()}');
+
+      // Update the expense in the database
+      await ref
+          .child(userId)
+          .child(widget.expense!.key!)
+          .update(updatedExpense.toJson())
+          .then((_) => print("Expense updated successfully"))
+          .catchError((error) => print("Failed to update expense: $error"));
+    } else {
+      // Adding a new expense
+      Expense newExpense = Expense(
+        category: selectedCategory!,
+        amount: double.parse(amount_c.text),
+        description: expalin_C.text,
+        date: selectedDate!,
+        type: determineType(selectedCategory!), // Add type determination
+        recurrence: selectedRecurrence ?? 'Never',
+        reminder: selectedReminder ?? 'Never',
+      );
+
+      // Debug print
+      print('Adding New Expense: ${newExpense.toJson()}');
+
+      // Add the new expense to the database
+      await ref
+          .child(userId)
+          .push()
+          .set(newExpense.toJson())
+          .then((_) => print("New expense added successfully"))
+          .catchError((error) => print("Failed to add new expense: $error"));
+    }
+
+    Navigator.of(context).pop(); // Go back after saving
+  }
+
+  void updateExpenseInDatabase(Expense expense) {
+    if (expense.key == null) {
+      // Handle the error or return early
+      print("Expense key is null. Cannot update the expense in the database.");
+      return;
+    }
+
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child("expenses");
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+
+    ref.child(userId).child(expense.key!).update(expense.toJson()).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Expense updated successfully")),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to update expense: $error")),
+      );
+    });
+  }
+
+  void addExpenseToDatabase(Expense expense) {
+    DatabaseReference ref = FirebaseDatabase.instance.ref().child("expenses");
+    String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
+
+    ref.child(userId).push().set(expense.toJson()).then((_) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Expense added successfully")),
+      );
+    }).catchError((error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to add expense: $error")),
+      );
+    });
+  }
+
+  DateTime? calculateNextDueDate(String recurrence) {
+    DateTime now = DateTime.now();
+    switch (recurrence) {
+      case 'Every Minute':
+        return now.add(Duration(minutes: 1));
+      case 'Every Day':
+        return now.add(Duration(days: 1));
+      case 'Every 3 Days':
+        return now.add(Duration(days: 3));
+      case 'Every Week':
+        return now.add(Duration(days: 7));
+      case 'Never':
+      default:
+        return null; // Return null for 'Never' or unrecognized recurrence
+    }
+  }
+
   GestureDetector save() {
     return GestureDetector(
       onTap: () {
@@ -111,14 +236,16 @@ class _Add_ScreenState extends State<Add_Screen> {
         // Proceed if all required fields are not null and not empty
         try {
           var expense = Expense(
-              category:
-                  selectedCategory!, // Non-nullable assertion used after check
-              type: determineType(
-                  selectedCategory!), // Determine if it's an income or expense based on category
-              amount: double.parse(amount_c.text),
-              description: expalin_C.text,
-              date: date,
-              recurrence: selectedRecurrence!);
+            category:
+                selectedCategory!, // Non-nullable assertion used after check
+            type:
+                selctedItemi!, // Determine if it's an income or expense based on category
+            amount: double.parse(amount_c.text),
+            description: expalin_C.text,
+            date: date,
+            recurrence: selectedRecurrence ?? 'Never',
+            reminder: selectedReminder ?? 'Never',
+          );
           addExpense(expense);
           Navigator.of(context).pop();
         } catch (e) {
@@ -149,10 +276,8 @@ class _Add_ScreenState extends State<Add_Screen> {
     );
   }
 
-  String determineType(String category) {
-    // Implement logic to determine if the category is an 'Income' or 'Expense'
-    // This is just a placeholder implementation
-    return category.contains('Salary') ? 'Income' : 'Expense';
+  String determineType(String categoryType) {
+    return categoryType; // Simply return the type passed with the category
   }
 
   Widget date_time() {
@@ -283,7 +408,6 @@ class _Add_ScreenState extends State<Add_Screen> {
   GestureDetector nameField() {
     return GestureDetector(
       onTap: () async {
-        // Get the result from ExpenseCategoriesScreen
         final result = await Navigator.push(
           context,
           MaterialPageRoute(builder: (context) => ExpenseCategoriesScreen()),
@@ -292,9 +416,8 @@ class _Add_ScreenState extends State<Add_Screen> {
         // Handle the result here
         if (result != null && result is Map) {
           setState(() {
-            // Set the category and the type based on the result
             selectedCategory = result['name'];
-            selctedItemi = result['type'];
+            selctedItemi = result['type']; // Capture the type here
           });
         }
       },

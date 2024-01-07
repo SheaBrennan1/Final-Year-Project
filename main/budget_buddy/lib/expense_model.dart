@@ -1,18 +1,20 @@
 class Expense {
-  String? key; // Add a key field
+  String? key; // Unique identifier for the expense
   String category;
-  String type; // Income or Expense
+  String type; // 'Income' or 'Expense'
   double amount;
-  String recurrence;
+  String recurrence; // Recurrence pattern
+  String reminder; // Reminder setting
   String description;
   DateTime date;
 
   Expense({
-    this.key, // Include key in the constructor
+    this.key,
     required this.category,
     required this.type,
     required this.amount,
     required this.recurrence,
+    required this.reminder,
     required this.description,
     required this.date,
   });
@@ -23,6 +25,7 @@ class Expense {
       'type': type,
       'amount': amount,
       'recurrence': recurrence,
+      'reminder': reminder,
       'description': description,
       'date': date.toIso8601String(),
     };
@@ -34,7 +37,8 @@ class Expense {
       category: json['category'],
       type: json['type'],
       amount: (json['amount'] as num).toDouble(),
-      recurrence: json['recurrence'], // Add this line
+      recurrence: json['recurrence'],
+      reminder: json['reminder'],
       description: json['description'],
       date: DateTime.parse(json['date']),
     );
