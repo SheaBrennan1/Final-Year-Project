@@ -1,7 +1,9 @@
 import 'package:budget_buddy/add.dart';
+import 'package:budget_buddy/budget_screen.dart';
 import 'package:budget_buddy/home.dart';
 import 'package:budget_buddy/statistics.dart';
 import 'package:flutter/material.dart';
+import 'package:budget_buddy/user_profile_screen.dart';
 
 class Bottom extends StatefulWidget {
   const Bottom({Key? key}) : super(key: key);
@@ -12,7 +14,15 @@ class Bottom extends StatefulWidget {
 
 class _BottomState extends State<Bottom> {
   int index_color = 0;
-  List Screen = [Home(), Statistics(), Home(), Statistics()];
+
+  // Explicitly define the list as a list of widgets
+  List<Widget> Screen = [
+    Home(),
+    Statistics(),
+    BudgetScreen(),
+    UserProfileScreen()
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -27,64 +37,39 @@ class _BottomState extends State<Bottom> {
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
-          shape: CircularNotchedRectangle(),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 7.5, bottom: 7.5),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      index_color = 0;
-                    });
-                  },
-                  child: Icon(
-                    Icons.home,
-                    size: 30,
-                    color: index_color == 0 ? Color(0xff368983) : Colors.grey,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      index_color = 1;
-                    });
-                  },
-                  child: Icon(
-                    Icons.bar_chart_outlined,
-                    size: 30,
-                    color: index_color == 1 ? Color(0xff368983) : Colors.grey,
-                  ),
-                ),
-                SizedBox(width: 20),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      index_color = 2;
-                    });
-                  },
-                  child: Icon(
-                    Icons.account_balance_wallet_outlined,
-                    size: 30,
-                    color: index_color == 2 ? Color(0xff368983) : Colors.grey,
-                  ),
-                ),
-                GestureDetector(
-                  onTap: () {
-                    setState(() {
-                      index_color = 3;
-                    });
-                  },
-                  child: Icon(
-                    Icons.person_2_outlined,
-                    size: 30,
-                    color: index_color == 3 ? Color(0xff368983) : Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          )),
+        shape: CircularNotchedRectangle(),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 7.5, bottom: 7.5),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              // Home
+              _navBarItem(icon: Icons.home, index: 0),
+              // Statistics
+              _navBarItem(icon: Icons.bar_chart_outlined, index: 1),
+              SizedBox(width: 20),
+              // Wallet or another option
+              _navBarItem(
+                  icon: Icons.account_balance_wallet_outlined, index: 2),
+              // Profile
+              _navBarItem(
+                  icon: Icons.person_outline,
+                  index: 3), // Changed icon for profile
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _navBarItem({required IconData icon, required int index}) {
+    return GestureDetector(
+      onTap: () => setState(() => index_color = index),
+      child: Icon(
+        icon,
+        size: 30,
+        color: index_color == index ? Color(0xff368983) : Colors.grey,
+      ),
     );
   }
 }

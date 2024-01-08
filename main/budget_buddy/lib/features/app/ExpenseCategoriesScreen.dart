@@ -1,51 +1,136 @@
 import 'package:flutter/material.dart';
 
 final List<Map<String, dynamic>> expenseCategories = [
-  {"name": "Food", "image": "images/Food.png", "type": "Expense"},
-  {"name": "Shopping", "image": "images/Shopping.png", "type": "Expense"},
+  {
+    "name": "Food",
+    "image": "images/Food.png",
+    "color": Colors.red,
+    "type": "Expense"
+  },
+  {
+    "name": "Shopping",
+    "image": "images/Shopping.png",
+    "color": Colors.blue,
+    "type": "Expense"
+  },
   {
     "name": "Transportation",
     "image": "images/Transportation.png",
+    "color": Colors.green,
     "type": "Expense"
   },
-  {"name": "Home", "image": "images/Home.png", "type": "Expense"},
+  {
+    "name": "Home",
+    "image": "images/Home.png",
+    "color": Colors.purple,
+    "type": "Expense"
+  },
   {
     "name": "Bills & Fees",
     "image": "images/Bills & Fees.png",
+    "color": Colors.orange,
     "type": "Expense"
   },
   {
     "name": "Entertainment",
     "image": "images/Entertainment.png",
+    "color": Colors.yellow,
     "type": "Expense"
   },
-  {"name": "Car", "image": "images/Car.png", "type": "Expense"},
-  {"name": "Travel", "image": "images/Travel.png", "type": "Expense"},
+  {
+    "name": "Car",
+    "image": "images/Car.png",
+    "color": Colors.brown,
+    "type": "Expense"
+  },
+  {
+    "name": "Travel",
+    "image": "images/Travel.png",
+    "color": Colors.teal,
+    "type": "Expense"
+  },
   {
     "name": "Family & Personal",
     "image": "images/Family & Personal.png",
+    "color": Colors.cyan,
     "type": "Expense"
   },
-  {"name": "Health", "image": "images/Health.png", "type": "Expense"},
-  {"name": "Education", "image": "images/Education.png", "type": "Expense"},
-  {"name": "Groceries", "image": "images/Groceries.png", "type": "Expense"},
-  {"name": "Gifts", "image": "images/Gifts.png", "type": "Expense"},
+  {
+    "name": "Health",
+    "image": "images/Health.png",
+    "color": Colors.lime,
+    "type": "Expense"
+  },
+  {
+    "name": "Education",
+    "image": "images/Education.png",
+    "color": Colors.indigo,
+    "type": "Expense"
+  },
+  {
+    "name": "Groceries",
+    "image": "images/Groceries.png",
+    "color": Color.fromARGB(255, 233, 138, 33),
+    "type": "Expense"
+  },
+  {
+    "name": "Gifts",
+    "image": "images/Gifts.png",
+    "color": Colors.amber,
+    "type": "Expense"
+  },
   {
     "name": "Sports & Hobbies",
     "image": "images/Sports & Hobbies.png",
+    "color": Colors.deepOrange,
     "type": "Expense"
   },
-  {"name": "Beauty", "image": "images/Beauty.png", "type": "Expense"},
-  {"name": "Work", "image": "images/Work.png", "type": "Expense"},
-  {"name": "Other", "image": "images/Other.png", "type": "Expense"},
+  {
+    "name": "Beauty",
+    "image": "images/Beauty.png",
+    "color": Colors.lightGreen,
+    "type": "Expense"
+  },
+  {
+    "name": "Work",
+    "image": "images/Work.png",
+    "color": Colors.grey,
+    "type": "Expense"
+  },
+  {
+    "name": "Other",
+    "image": "images/Other.png",
+    "color": Colors.black,
+    "type": "Expense"
+  },
   // ... other categories with their corresponding image paths
 ];
 
 final List<Map<String, dynamic>> incomeCategories = [
-  {"name": "Salary", "image": "images/Salary.png", "type": "Income"},
-  {"name": "Loan", "image": "images/Loan.png", "type": "Income"},
-  {"name": "Gifts", "image": "images/Gifts.png", "type": "Income"},
-  {"name": "Other", "image": "images/Other.png", "type": "Income"},
+  {
+    "name": "Salary",
+    "image": "images/Salary.png",
+    "color": Colors.blueGrey,
+    "type": "Income"
+  },
+  {
+    "name": "Loan",
+    "image": "images/Loan.png",
+    "color": Colors.lightBlue,
+    "type": "Income"
+  },
+  {
+    "name": "Gifts",
+    "image": "images/Gifts.png",
+    "color": Colors.purpleAccent,
+    "type": "Income"
+  },
+  {
+    "name": "Other",
+    "image": "images/Other.png",
+    "color": Colors.deepPurple,
+    "type": "Income"
+  },
   // ... other income categories with their corresponding image paths
 ];
 
@@ -55,18 +140,33 @@ class ExpenseCategoriesScreen extends StatefulWidget {
       _ExpenseCategoriesScreenState();
 
   static String getImagePathForCategory(String categoryName) {
-    // Try to find the category in expense categories
     var category = expenseCategories
         .firstWhere((cat) => cat['name'] == categoryName, orElse: () => {});
 
-    // If not found in expense categories, try income categories
     if (category.isEmpty) {
       category = incomeCategories
           .firstWhere((cat) => cat['name'] == categoryName, orElse: () => {});
     }
 
-    // Return image path if category is found, else return default image path
     return category.isNotEmpty ? category['image'] : "images/Default.png";
+  }
+
+  static Color getColorForCategory(String categoryName) {
+    var category = expenseCategories
+        .firstWhere((cat) => cat['name'] == categoryName, orElse: () => {});
+
+    if (category.isEmpty) {
+      category = incomeCategories
+          .firstWhere((cat) => cat['name'] == categoryName, orElse: () => {});
+    }
+
+    if (category.isNotEmpty && category.containsKey('color')) {
+      print("Category: $categoryName, Color: ${category['color']}");
+      return category['color']; // return the color directly
+    } else {
+      print("Category: $categoryName, Color: ${category['color']}");
+      return Colors.grey; // Default color if no match found or color is null
+    }
   }
 }
 
@@ -120,7 +220,6 @@ class _ExpenseCategoriesScreenState extends State<ExpenseCategoriesScreen>
         if (imagePath != null && imagePath.isNotEmpty) {
           imageWidget = Image.asset(imagePath, height: 40);
         } else {
-          // Fallback to a default icon if the image path is not provided
           imageWidget = Icon(Icons.category, size: 40);
         }
 
