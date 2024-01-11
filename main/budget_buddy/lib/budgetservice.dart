@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'budget.dart';
 
@@ -9,7 +11,8 @@ class BudgetService {
     try {
       var snapshot = await _firestore
           .collection('budgets')
-          .where('userId', isEqualTo: userId)
+          .doc(userId)
+          .collection('userBudgets')
           .get();
 
       return snapshot.docs
@@ -28,6 +31,30 @@ class BudgetService {
     } catch (e) {
       print('Error adding or updating budget: $e');
       // Handle the error appropriately
+    }
+  }
+
+  Future<double> getCategorySpending(
+      String userId, String budgetId, String category) async {
+    try {
+      var expensesSnapshot = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(userId)
+          .collection('expenses')
+          .where('budgetId', isEqualTo: budgetId)
+          .where('category', isEqualTo: category)
+          .get();
+
+      return expensesSnapshot.docs.fold(
+          0.0,
+          (double sum, DocumentSnapshot doc) {
+            var data = doc.data() as Map<String, dynamic>?;
+            return sum + (data?['amount'] as num? ?? 0).toDouble();
+          } as FutureOr<double> Function(FutureOr<double> previousValue,
+              QueryDocumentSnapshot<Map<String, dynamic>> element));
+    } catch (e) {
+      print('Error fetching category spending: $e');
+      return 0.0;
     }
   }
 }

@@ -1,42 +1,41 @@
 class Budget {
   String id;
-  int month;
-  int year;
+  String name;
+  DateTime startDate;
+  DateTime endDate;
   Map<String, double> categoryAllocations;
-  Map<String, double> categorySpending;
 
   Budget({
     required this.id,
-    required this.month,
-    required this.year,
+    required this.name,
+    required this.startDate,
+    required this.endDate,
     required this.categoryAllocations,
-    this.categorySpending = const {},
   });
 
-  // Getter to calculate the total budget
   double get totalBudget {
     return categoryAllocations.values.fold(0, (sum, amount) => sum + amount);
   }
 
-  // Convert a Budget object into a Map
+  factory Budget.fromMap(Map<String, dynamic> map) {
+    return Budget(
+      id: map['id'] as String? ?? 'default_id', // Provide a default value
+      name: map['name'] as String? ?? 'Unnamed Budget',
+      startDate: DateTime.parse(map['startDate']),
+      endDate: DateTime.parse(map['endDate']),
+      categoryAllocations: Map<String, double>.from(map['categoryAllocations']),
+    );
+  }
+
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'month': month,
-      'year': year,
+      'name': name,
+      'startDate': startDate.toIso8601String(),
+      'endDate': endDate.toIso8601String(),
       'categoryAllocations': categoryAllocations,
-      'categorySpending': categorySpending,
     };
   }
 
-  // Create a Budget object from a Map
-  factory Budget.fromMap(Map<String, dynamic> map) {
-    return Budget(
-      id: map['id'],
-      month: map['month'],
-      year: map['year'],
-      categoryAllocations: Map<String, double>.from(map['categoryAllocations']),
-      categorySpending: Map<String, double>.from(map['categorySpending']),
-    );
-  }
+  // Additional methods and properties can be added as needed
 }

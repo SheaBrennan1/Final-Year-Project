@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:budget_buddy/features/user_auth/presentation/pages/login_page.dart';
+import 'package:budget_buddy/goals_and_targets_screen.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -59,6 +60,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     }
   }
 
+  void _navigateToGoalsAndTargetsScreen() {
+    Navigator.of(context).push(MaterialPageRoute(
+      builder: (context) => GoalsAndTargetsScreen(),
+    ));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,6 +93,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 // TODO: Handle profile edit
               },
               child: Text('Edit Profile'),
+            ),
+            ElevatedButton(
+              onPressed: _navigateToGoalsAndTargetsScreen,
+              child: Text('Goals and Targets'),
             ),
             ElevatedButton(
               onPressed: () async {

@@ -1,16 +1,28 @@
-# budget_buddy
 
-A new Flutter project.
+# Budget Buddy
 
-## Getting Started
+## Overview
+Budget Buddy is an Expense Tracking application for Android and IOS, this is my Final year Project for my Computer Science Degree. It is a budget management application that allows users to track their expenses and incomes with ease. Built with Flutter, Firebase and Node.js.
 
-This project is a starting point for a Flutter application.
+## Features
+- **Expense Tracking**: Log every expense and categorize them for better financial management.
+- **Income Tracking**: Keep track of all your income sources.
+- **Statistics**: Visualize your financial habits with detailed charts and graphs.
+- **Date Range Selection**: Filter your transactions by selecting custom date ranges.
+- **Category Management**: Customize your expense and income categories.
 
-A few resources to get you started if this is your first Flutter project:
+## Installation
+To get started with Budget Buddy, clone the repository and install the necessary dependencies:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+```bash
+git clone https://github.com/your-username/budget-buddy.git
+cd budget-buddy
+flutter pub get
+```
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Usage
+Launch the application on your preferred device or emulator using the following command:
+
+```bash
+flutter run
+```

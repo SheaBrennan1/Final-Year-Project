@@ -1,8 +1,9 @@
 import 'package:budget_buddy/budgetservice.dart';
+import 'package:budget_buddy/create_budget_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'budget.dart';
-import 'budgetservice.dart'; // Make sure this is the correct import for BudgetService
+import 'budgetservice.dart';
 import 'budget_view_screen.dart';
 import 'budget_edit_screen.dart';
 
@@ -17,11 +18,17 @@ class _BudgetScreenState extends State<BudgetScreen> {
   @override
   void initState() {
     super.initState();
-    final BudgetService budgetService = BudgetService();
-    final User? user = FirebaseAuth.instance.currentUser;
+    fetchUserBudgets();
+  }
 
-    // Assuming getBudgets is a method that fetches all budgets for the user
-    budgetsFuture = budgetService.getBudgets(user?.uid ?? '');
+  void fetchUserBudgets() {
+    final User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final BudgetService budgetService = BudgetService();
+      budgetsFuture = budgetService.getBudgets(user.uid);
+    } else {
+      print("User not logged in");
+    }
   }
 
   @override
@@ -33,39 +40,38 @@ class _BudgetScreenState extends State<BudgetScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No budgets available'));
-          } else {
-            return ListView.builder(
-              itemCount: snapshot.data!.length,
-              itemBuilder: (context, index) {
-                Budget budget = snapshot.data![index];
-                return ListTile(
-                  title: Text('Budget for ${budget.month}/${budget.year}'),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => BudgetViewScreen(budget: budget),
-                    ),
-                  ),
-                );
-              },
-            );
           }
+          if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          }
+          if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(child: Text('No budgets available'));
+          }
+
+          return ListView.builder(
+            itemCount: snapshot.data!.length,
+            itemBuilder: (context, index) {
+              Budget budget = snapshot.data![index];
+              return ListTile(
+                title: Text('${budget.name}'),
+                subtitle: Text(
+                    'Budget Period: ${budget.startDate.toLocal()} - ${budget.endDate.toLocal()}'),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => BudgetViewScreen(budget: budget),
+                  ),
+                ),
+              );
+            },
+          );
         },
       ),
-      floatingActionButton: // Within your BudgetScreen class
-
-          FloatingActionButton(
+      floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to BudgetEditScreen with null or a new Budget object for creating a new budget
           Navigator.push(
             context,
-            MaterialPageRoute(
-                builder: (context) => BudgetEditScreen(
-                    budget: null)), // Pass null or a new Budget instance
+            MaterialPageRoute(builder: (context) => CreateBudgetScreen()),
           );
         },
         child: Icon(Icons.add),
