@@ -1,9 +1,12 @@
+enum BudgetType { standard, custom }
+
 class Budget {
   String id;
   String name;
   DateTime startDate;
   DateTime endDate;
   Map<String, double> categoryAllocations;
+  BudgetType type;
 
   Budget({
     required this.id,
@@ -11,6 +14,7 @@ class Budget {
     required this.startDate,
     required this.endDate,
     required this.categoryAllocations,
+    this.type = BudgetType.custom,
   });
 
   double get totalBudget {
@@ -24,6 +28,9 @@ class Budget {
       startDate: DateTime.parse(map['startDate']),
       endDate: DateTime.parse(map['endDate']),
       categoryAllocations: Map<String, double>.from(map['categoryAllocations']),
+      type: map['type'] == 'BudgetType.standard'
+          ? BudgetType.standard
+          : BudgetType.custom, // Convert string back to enum
     );
   }
 
@@ -34,6 +41,7 @@ class Budget {
       'startDate': startDate.toIso8601String(),
       'endDate': endDate.toIso8601String(),
       'categoryAllocations': categoryAllocations,
+      'type': type.toString(),
     };
   }
 

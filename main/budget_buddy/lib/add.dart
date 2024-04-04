@@ -1,10 +1,15 @@
+import 'package:budget_buddy/budget_screen.dart';
 import 'package:budget_buddy/data/model/add_date.dart';
 import 'package:budget_buddy/expense_model.dart';
+import 'package:budget_buddy/home.dart';
+import 'package:budget_buddy/statistics.dart';
+import 'package:budget_buddy/user_profile_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:budget_buddy/features/app/ExpenseCategoriesScreen.dart';
+import 'package:intl/intl.dart';
 
 class Add_Screen extends StatefulWidget {
   final Expense? expense; // Add this line
@@ -21,11 +26,13 @@ class _Add_ScreenState extends State<Add_Screen> {
   String? selctedItem;
   String? selctedItemi;
   String? selectedCategory;
+  String? selectedCategoryImage;
   TextEditingController expalin_C = TextEditingController();
   FocusNode ex = FocusNode();
   TextEditingController amount_c = TextEditingController();
   FocusNode amount_ = FocusNode();
   DateTime? selectedDate;
+  int index_color = 4;
 
   @override
   void initState() {
@@ -39,7 +46,6 @@ class _Add_ScreenState extends State<Add_Screen> {
     selectedDate = widget.expense?.date ?? DateTime.now();
     selectedRecurrence = widget.expense?.recurrence ?? 'Never';
     selectedReminder = widget.expense?.reminder ?? 'Never';
-    // ... Other initializations
   }
 
   final List<String> _item = [
@@ -73,97 +79,181 @@ class _Add_ScreenState extends State<Add_Screen> {
     await ref.child(userId).push().set(expense.toJson());
   }
 
+  // Example Input Field Styling
+  Widget inputField(String label, TextEditingController controller,
+      {TextInputType keyboardType = TextInputType.text, IconData? prefixIcon}) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(8.0)),
+        prefixIcon: prefixIcon != null ? Icon(prefixIcon) : null,
+        labelStyle: TextStyle(color: Colors.blueGrey), // Updated color
+        focusedBorder: OutlineInputBorder(
+          borderSide: BorderSide(color: Colors.teal), // Updated color
+        ),
+      ),
+    );
+  }
+
+  Widget titledInputField(String title, Widget inputField) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: TextStyle(
+              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),
+        ),
+        SizedBox(height: 8),
+        inputField,
+      ],
+    );
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: Colors.grey.shade100,
-        body: SafeArea(
-            child: Stack(
-          alignment: AlignmentDirectional.center,
-          children: [
-            background_container(context),
-            Positioned(
-              top: 120,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.white,
-                ),
-                height: 550,
-                width: 340,
-                child: Column(
-                  children: [
-                    SizedBox(height: 35),
-                    nameField(),
-                    SizedBox(height: 20),
-                    expalin(),
-                    SizedBox(height: 20),
-                    amount(),
-                    SizedBox(height: 20),
-                    date_time(),
-                    SizedBox(height: 20),
-                    recurrenceField(),
-                    SizedBox(height: 20),
-                    reminderField(),
-                    Spacer(),
-                    save(),
-                    SizedBox(height: 20),
-                  ],
-                ),
+      appBar: AppBar(
+        title: Text(widget.expense == null ? 'Add Expense' : 'Edit Expense'),
+        backgroundColor: Colors.blue,
+        elevation: 4.0,
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Card(
+            color: Colors.blue.shade200,
+            // Wrap input fields with a Card widget
+            elevation: 4.0, // Add elevation for a shadow effect
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12.0), // Add rounded corners
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                children: [
+                  nameField(),
+                  SizedBox(height: 16),
+                  explainField(),
+                  SizedBox(height: 16),
+                  amount(),
+                  SizedBox(height: 16),
+                  date_time(),
+                  SizedBox(height: 16),
+                  recurrenceField(),
+                  SizedBox(height: 16),
+                  reminderField(),
+                  SizedBox(height: 24),
+                  save(),
+                ],
               ),
             ),
+          ),
+        ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          _onItemTapped(4);
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blue,
+      ),
+      bottomNavigationBar: BottomAppBar(
+        color: Colors.white,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: <Widget>[
+            IconButton(
+                icon: Icon(Icons.home),
+                onPressed: () {
+                  _onItemTapped(0);
+                }),
+            IconButton(
+                icon: Icon(Icons.search),
+                onPressed: () {
+                  _onItemTapped(1);
+                }),
+            IconButton(
+                icon: Icon(Icons.notifications),
+                onPressed: () {
+                  _onItemTapped(2);
+                }),
+            IconButton(
+                icon: Icon(Icons.account_circle),
+                onPressed: () {
+                  _onItemTapped(3);
+                }),
           ],
-        )));
+        ),
+      ),
+    );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      index_color = index;
+    });
+    switch (index) {
+      case 0:
+        Navigator.of(context)
+            .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
+        break;
+      case 1:
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => Statistics()));
+        break;
+      case 2:
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => BudgetScreen()));
+        break;
+      case 3:
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => UserProfileScreen()));
+        break;
+      case 4:
+        break;
+    }
   }
 
   void saveExpense() async {
     DatabaseReference ref = FirebaseDatabase.instance.ref().child("expenses");
     String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
-    if (widget.expense != null && widget.expense!.key != null) {
+    // Prepare the Expense object with correct type (either "Income" or "Expense")
+    Expense expense = Expense(
+      key: widget.expense?.key,
+      category: selectedCategory!,
+      amount: double.parse(amount_c.text),
+      description: expalin_C.text,
+      date: selectedDate!,
+      type:
+          selctedItemi!, // Correctly set the type to either "Income" or "Expense"
+      recurrence: selectedRecurrence ?? 'Never',
+      reminder: selectedReminder ?? 'Never',
+    );
+
+    if (expense.key != null) {
       // Updating an existing expense
-      Expense updatedExpense = Expense(
-        key: widget.expense!.key!, // Asserting non-null
-        category: selectedCategory!,
-        amount: double.parse(amount_c.text),
-        description: expalin_C.text,
-        date: selectedDate!,
-        type: determineType(selectedCategory!), // Add type determination
-        recurrence: selectedRecurrence ?? 'Never',
-        reminder: selectedReminder ?? 'Never',
-      );
-
-      // Debug print
-      print('Updating Expense: ${updatedExpense.toJson()}');
-
-      // Update the expense in the database
       await ref
           .child(userId)
-          .child(widget.expense!.key!)
-          .update(updatedExpense.toJson())
-          .then((_) => print("Expense updated successfully"))
-          .catchError((error) => print("Failed to update expense: $error"));
+          .child(expense.key!)
+          .update(expense.toJson())
+          .then((_) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Expense updated successfully"))))
+          .catchError((error) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Failed to update expense: $error"))));
     } else {
       // Adding a new expense
-      Expense newExpense = Expense(
-        category: selectedCategory!,
-        amount: double.parse(amount_c.text),
-        description: expalin_C.text,
-        date: selectedDate!,
-        type: determineType(selectedCategory!), // Add type determination
-        recurrence: selectedRecurrence ?? 'Never',
-        reminder: selectedReminder ?? 'Never',
-      );
-
-      // Debug print
-      print('Adding New Expense: ${newExpense.toJson()}');
-
-      // Add the new expense to the database
       await ref
           .child(userId)
           .push()
-          .set(newExpense.toJson())
-          .then((_) => print("New expense added successfully"))
-          .catchError((error) => print("Failed to add new expense: $error"));
+          .set(expense.toJson())
+          .then((_) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("New expense added successfully"))))
+          .catchError((error) => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text("Failed to add new expense: $error"))));
     }
 
     Navigator.of(context).pop(); // Go back after saving
@@ -222,56 +312,24 @@ class _Add_ScreenState extends State<Add_Screen> {
     }
   }
 
-  GestureDetector save() {
-    return GestureDetector(
-      onTap: () {
-        // Ensure both selectedCategory and amount have valid non-empty values
-        if (selectedCategory?.isEmpty ?? true || amount_c.text.isEmpty) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Category or amount is missing.")),
-          );
-          return;
-        }
-
-        // Proceed if all required fields are not null and not empty
-        try {
-          var expense = Expense(
-            category:
-                selectedCategory!, // Non-nullable assertion used after check
-            type:
-                selctedItemi!, // Determine if it's an income or expense based on category
-            amount: double.parse(amount_c.text),
-            description: expalin_C.text,
-            date: date,
-            recurrence: selectedRecurrence ?? 'Never',
-            reminder: selectedReminder ?? 'Never',
-          );
-          addExpense(expense);
-          Navigator.of(context).pop();
-        } catch (e) {
-          // If parsing fails or any other error occurs
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("There was an error saving the expense.")),
-          );
-        }
-      },
-      child: Container(
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(15),
-          color: Color(0xff368983),
-        ),
-        width: 120,
-        height: 50,
-        child: Text(
-          'Save',
-          style: TextStyle(
-            fontFamily: 'f',
-            fontWeight: FontWeight.w600,
-            color: Colors.white,
-            fontSize: 17,
+  Widget save() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(
+          horizontal: 30), // Increase horizontal padding to enlarge the button
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue, // Changed background color to blue
+          padding: EdgeInsets.symmetric(
+              vertical: 16,
+              horizontal: 40), // Increased padding for larger size
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          textStyle: TextStyle(
+            fontSize: 20, // Increased font size
+            fontWeight: FontWeight.bold,
           ),
         ),
+        onPressed: saveExpense,
+        child: Text('Save Expense', style: TextStyle(color: Colors.white)),
       ),
     );
   }
@@ -281,30 +339,56 @@ class _Add_ScreenState extends State<Add_Screen> {
   }
 
   Widget date_time() {
-    return Container(
-      alignment: Alignment.bottomLeft,
-      decoration: BoxDecoration(
+    // TextEditingController to display the selected date
+    TextEditingController dateController =
+        TextEditingController(text: DateFormat('yyyy-MM-dd').format(date));
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white, // Set the background color to white
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(width: 2, color: Color(0xffC5C5C5))),
-      width: 300,
-      child: TextButton(
-        onPressed: () async {
-          DateTime? newDate = await showDatePicker(
+          border: Border.all(
+            width: 1,
+            color: Color(0xffC5C5C5),
+          ),
+        ),
+        child: TextFormField(
+          controller: dateController,
+          readOnly: true, // Prevents keyboard from showing
+          decoration: InputDecoration(
+            contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+            labelText: 'Date',
+            suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
+            border: InputBorder.none, // Remove the border
+          ),
+          onTap: () async {
+            DateTime? newDate = await showDatePicker(
               context: context,
               initialDate: date,
-              firstDate: DateTime(2020),
-              lastDate: DateTime(2100));
-          if (newDate == Null) return;
-          setState(() {
-            date = newDate!;
-          });
-        },
-        child: Text(
-          'Date : ${date.year} / ${date.day} / ${date.month}',
-          style: TextStyle(
-            fontSize: 15,
-            color: Colors.black,
-          ),
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              builder: (BuildContext context, Widget? child) {
+                return Theme(
+                  data: ThemeData.light().copyWith(
+                    primaryColor: Colors.teal,
+                    colorScheme: ColorScheme.light(primary: Colors.teal),
+                    buttonTheme:
+                        ButtonThemeData(textTheme: ButtonTextTheme.primary),
+                  ),
+                  child: child!,
+                );
+              },
+            );
+            if (newDate != null) {
+              setState(() {
+                date = newDate;
+                // Update the text field with the new date
+                dateController.text = DateFormat('yyyy-MM-dd').format(newDate);
+              });
+            }
+          },
         ),
       ),
     );
@@ -370,94 +454,162 @@ class _Add_ScreenState extends State<Add_Screen> {
         focusNode: amount_,
         controller: amount_c,
         decoration: InputDecoration(
+          filled: true, // Fill the input field with color
+          fillColor: Colors.white, // Set the background color to white
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-          labelText: 'amount',
-          labelStyle: TextStyle(fontSize: 17, color: Colors.grey.shade500),
+          labelText: 'Amount',
+          prefixText: '£ ', // Add £ symbol as prefix
+          prefixStyle: TextStyle(
+            color: Colors.black,
+            fontSize: 17,
+          ), // Style for the £ symbol
+          labelStyle: TextStyle(
+            fontSize: 17,
+            color: Colors.grey.shade600,
+          ),
           enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5))),
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+              width: 1,
+              color: Color(0xFFC5C5C5),
+            ),
+          ),
           focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xff368983))),
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(
+              width: 2,
+              color: Colors.teal,
+            ), // Updated color for focus
+          ),
         ),
       ),
     );
   }
 
-  Padding expalin() {
+  Padding explainField() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: TextField(
-        focusNode: ex,
-        controller: expalin_C,
-        decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
-          labelText: 'explain',
-          labelStyle: TextStyle(fontSize: 17, color: Colors.grey.shade500),
-          enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5))),
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xff368983))),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+            width: 1,
+            color: Color(0xffC5C5C5),
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          child: TextFormField(
+            focusNode: ex,
+            controller: expalin_C,
+            decoration: InputDecoration(
+              hintText: 'Explain', // Set the hint text to 'Explain'
+              hintStyle: TextStyle(color: Colors.grey), // Hint text color
+              border: InputBorder.none,
+            ),
+            maxLines: null,
+            keyboardType: TextInputType.multiline,
+          ),
         ),
       ),
     );
   }
 
-  GestureDetector nameField() {
-    return GestureDetector(
-      onTap: () async {
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => ExpenseCategoriesScreen()),
-        );
+  Widget nameField() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15),
+      child: GestureDetector(
+        onTap: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ExpenseCategoriesScreen()),
+          );
 
-        // Handle the result here
-        if (result != null && result is Map) {
-          setState(() {
-            selectedCategory = result['name'];
-            selctedItemi = result['type']; // Capture the type here
-          });
-        }
-      },
-      child: Container(
-        padding: EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: Color(0xffC5C5C5)),
+          if (result != null && result is Map) {
+            setState(() {
+              selectedCategory = result['name'];
+              selctedItemi = result['type'];
+              selectedCategoryImage = result['image'];
+            });
+          }
+        },
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 20),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: Color(0xffC5C5C5), width: 2),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.2),
+                spreadRadius: 1,
+                blurRadius: 3,
+                offset: Offset(0, 2), // Changes position of shadow
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              if (selectedCategoryImage != null &&
+                  selectedCategoryImage!.isNotEmpty)
+                categoryIcon(),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  selectedCategory == null || selectedCategory!.isEmpty
+                      ? "Select a Category"
+                      : selectedCategory!,
+                  style: TextStyle(fontSize: 16, color: Colors.black87),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Icon(Icons.arrow_drop_down, color: Colors.teal),
+            ],
+          ),
         ),
-        child: Text(selectedCategory ?? "Tap to select a category"),
       ),
     );
+  }
+
+  Widget categoryIcon() {
+    if (selectedCategoryImage != null && selectedCategoryImage!.isNotEmpty) {
+      return Image.asset(selectedCategoryImage!, height: 40);
+    } else {
+      return Icon(Icons.category, size: 40);
+    }
   }
 
   Padding reminderField() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        width: 300,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(width: 2, color: Color(0xffC5C5C5)),
+      child: DropdownButtonFormField(
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+          labelText: 'Reminder',
+          filled: true, // Fill the background with color
+          fillColor: Colors.white, // Set the background color to white
+          border: OutlineInputBorder(),
+          enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5))),
+          focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(10),
+              borderSide: BorderSide(width: 2, color: Color(0xff368983))),
         ),
-        child: DropdownButton<String>(
-          value: selectedReminder,
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedReminder = newValue!;
-            });
-          },
-          items: reminderOptions.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-          isExpanded: true,
-          underline: Container(),
-        ),
+        value: selectedReminder,
+        onChanged: (String? newValue) {
+          setState(() {
+            selectedReminder = newValue!;
+          });
+        },
+        items: reminderOptions.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
       ),
     );
   }
@@ -465,78 +617,82 @@ class _Add_ScreenState extends State<Add_Screen> {
   Padding recurrenceField() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 15),
-        width: 300,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(width: 2, color: Color(0xffC5C5C5)),
+      child: DropdownButtonFormField(
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+          labelText: 'Recurrence',
+          filled: true, // Fill the background with color
+          fillColor: Colors.white, // Set the background color to white
+          border: OutlineInputBorder(),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: BorderSide(width: 2, color: Color(0xff368983)),
+          ),
         ),
-        child: DropdownButton<String>(
-          value: selectedRecurrence,
-          onChanged: (String? newValue) {
-            setState(() {
-              selectedRecurrence = newValue!;
-            });
-          },
-          items:
-              recurrenceOptions.map<DropdownMenuItem<String>>((String value) {
-            return DropdownMenuItem<String>(
-              value: value,
-              child: Text(value),
-            );
-          }).toList(),
-          isExpanded: true,
-          underline: Container(),
-        ),
+        value: selectedRecurrence,
+        onChanged: (String? newValue) {
+          setState(() {
+            selectedRecurrence = newValue!;
+          });
+        },
+        items: recurrenceOptions.map<DropdownMenuItem<String>>((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
       ),
     );
   }
+}
 
-  Column background_container(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: double.infinity,
-          height: 240,
-          decoration: BoxDecoration(
-            color: Color(0xff368983),
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
+Column background_container(BuildContext context) {
+  return Column(
+    children: [
+      Container(
+        width: double.infinity,
+        height: 240,
+        decoration: BoxDecoration(
+          color: Color(0xff368983),
+          borderRadius: BorderRadius.only(
+            bottomLeft: Radius.circular(20),
+            bottomRight: Radius.circular(20),
           ),
-          child: Column(children: [
-            SizedBox(height: 40),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Icon(Icons.arrow_back, color: Colors.white),
-                  ),
-                  Text(
-                    'Adding',
-                    style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.white),
-                  ),
-                  Icon(
-                    Icons.attach_file_outlined,
-                    color: Colors.white,
-                  )
-                ],
-              ),
-            )
-          ]),
         ),
-      ],
-    );
-  }
+        child: Column(children: [
+          SizedBox(height: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.of(context).pop();
+                  },
+                  child: Icon(Icons.arrow_back, color: Colors.white),
+                ),
+                Text(
+                  'Adding',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white),
+                ),
+                Icon(
+                  Icons.attach_file_outlined,
+                  color: Colors.white,
+                )
+              ],
+            ),
+          )
+        ]),
+      ),
+    ],
+  );
 }

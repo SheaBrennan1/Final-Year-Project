@@ -1,9 +1,14 @@
 import 'package:budget_buddy/widgets/bottomnavigationbar.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:budget_buddy/home.dart';
 import 'package:budget_buddy/widgets/form_container_widget.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/sign_up_page.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/firebase_auth_implementation/firebase_auth_services.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // Add this import for SVG support
+import 'package:google_sign_in/google_sign_in.dart'; // Add this import for Google Sign-In
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,15 +30,35 @@ class _LoginPageState extends State<LoginPage> {
       );
 
       if (user != null) {
+        // Fetch the FCM token
+        String? fcmToken = await FirebaseMessaging.instance.getToken();
+        print("FCM Token: $fcmToken"); // For debugging purposes
+
+        // Update Firestore with the FCM token
+        if (fcmToken != null) {
+          await FirebaseFirestore.instance
+              .collection('userSettings')
+              .doc(user.uid)
+              .set(
+                  {
+                'fcmToken': fcmToken,
+              },
+                  SetOptions(
+                      merge:
+                          true)); // Use SetOptions to merge with existing document
+          print("FCM Token saved successfully for user: ${user.uid}");
+        } else {
+          print("FCM Token is null");
+        }
+
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => Bottom()));
+            context, MaterialPageRoute(builder: (context) => Home()));
       } else {
-        // Handle null user scenario
         showDialog(
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Login Failed'),
-            content: Text('Invalid email or password.'),
+            content: Text('User object returned is null.'),
             actions: <Widget>[
               TextButton(
                 child: Text('Ok'),
@@ -44,12 +69,12 @@ class _LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      // Handle exceptions
+      print("Login Error: $e"); // Print the error to the console for debugging
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Error'),
-          content: Text('An error occurred. Please try again later.'),
+          title: Text('Login Error'),
+          content: Text(e.toString()), // Provide specific error message
           actions: <Widget>[
             TextButton(
               child: Text('Ok'),
@@ -64,77 +89,210 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("Login"),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Login",
-                style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 30),
-              FormContainerWidget(
-                hintText: "Email",
-                isPasswordField: false,
-                controller: emailController,
-              ),
-              SizedBox(height: 10),
-              FormContainerWidget(
-                hintText: "Password",
-                isPasswordField: true,
-                controller: passwordController,
-              ),
-              SizedBox(height: 30),
-              GestureDetector(
-                onTap: signIn,
-                child: Container(
-                  width: double.infinity,
-                  height: 45,
-                  decoration: BoxDecoration(
-                    color: Colors.blue,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: Center(
-                    child: Text(
-                      "Login",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Colors.blue, Colors.blue],
+          ),
+        ),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 24.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                SizedBox(
+                    height: MediaQuery.of(context).size.height *
+                        0.1), // Adjusted the top spacing
+                Image.asset(
+                  'images/splash_screen.png', // Assuming your logo is named 'logo.png' in the assets
+                  width: MediaQuery.of(context).size.width * 0.4,
+                  height: MediaQuery.of(context).size.height * 0.2,
+                  fit: BoxFit.contain,
+                ),
+                Text(
+                  'Budget Buddy', // Title text
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
                   ),
                 ),
-              ),
-              SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Don't have an account?"),
-                  SizedBox(width: 5),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (context) => SignUpPage()),
-                        (route) => false,
-                      );
-                    },
-                    child: Text(
-                      "Sign Up",
+                SizedBox(
+                    height:
+                        32.0), // Added some space between the title and the form
+                TextFormField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white, // Set the fill color to white
+                    hintText: 'Email',
+                    hintStyle: TextStyle(
+                        color: Colors.black54), // Hint text style if needed
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: TextStyle(
+                      color: Colors.black), // Set the input text color to black
+                ),
+                SizedBox(height: 12.0),
+                TextFormField(
+                  controller: passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white, // Set the fill color to white
+                    hintText: 'Password',
+                    hintStyle: TextStyle(
+                        color: Colors.black54), // Hint text style if needed
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  style: TextStyle(
+                      color: Colors.black), // Set the input text color to black
+                ),
+                SizedBox(height: 24.0),
+                ElevatedButton(
+                  onPressed: signIn,
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue.shade900, // Text color
+                  ),
+                  child: Text('Login', style: TextStyle(fontSize: 16.0)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0),
+                  child: OutlinedButton.icon(
+                    icon: Image.asset(
+                      'images/google_logo.svg', // Make sure the path and file extension are correct
+                      width: 30,
+                      height: 30,
+                    ),
+                    label: Text(
+                      'Sign in with Google',
                       style: TextStyle(
-                        color: Colors.blue,
                         fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontSize: 16.0,
                       ),
                     ),
-                  )
-                ],
-              ),
-            ],
+                    style: OutlinedButton.styleFrom(
+                      backgroundColor: Colors.white,
+                      side: BorderSide(
+                          color: Colors.black,
+                          width: 2.0), // Black border added here
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30)),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    ),
+                    onPressed: () async {
+                      final GoogleSignIn googleSignIn = GoogleSignIn();
+                      final FirebaseAuth auth = FirebaseAuth.instance;
+
+                      try {
+                        final GoogleSignInAccount? googleSignInAccount =
+                            await googleSignIn.signIn();
+                        if (googleSignInAccount != null) {
+                          final GoogleSignInAuthentication
+                              googleSignInAuthentication =
+                              await googleSignInAccount.authentication;
+                          final AuthCredential credential =
+                              GoogleAuthProvider.credential(
+                            accessToken: googleSignInAuthentication.accessToken,
+                            idToken: googleSignInAuthentication.idToken,
+                          );
+                          final UserCredential authResult =
+                              await auth.signInWithCredential(credential);
+                          final User? user = authResult.user;
+
+                          // Store the user's UID and username in Firestore
+                          await FirebaseFirestore.instance
+                              .collection('userSettings')
+                              .doc(user?.uid)
+                              .set({
+                            'username': user?.displayName,
+                            // You can add more user-related settings here
+                          });
+
+                          if (user != null) {
+                            Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (context) => Home()));
+                          } else {
+                            // Handle null user scenario
+                            showDialog(
+                              context: context,
+                              builder: (context) => AlertDialog(
+                                title: Text('Login Failed'),
+                                content: Text('Google Sign-In failed.'),
+                                actions: <Widget>[
+                                  TextButton(
+                                    child: Text('Ok'),
+                                    onPressed: () =>
+                                        Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        }
+                      } catch (error) {
+                        print(error);
+                        // Handle error (e.g., user cancelled the sign-in process)
+                      }
+                    },
+                  ),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.black
+                        .withOpacity(0.4), // Semi-transparent black container
+                    borderRadius:
+                        BorderRadius.circular(20), // Adds rounded corners
+                  ),
+                  padding: const EdgeInsets.all(12.0),
+                  margin: const EdgeInsets.symmetric(
+                      vertical: 8.0,
+                      horizontal: 50), // Adjust margins as needed
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Don't have an account?",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => SignUpPage()),
+                          );
+                        },
+                        child: Text(
+                          "Sign Up",
+                          style: TextStyle(
+                            color: Colors.blueAccent[200],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

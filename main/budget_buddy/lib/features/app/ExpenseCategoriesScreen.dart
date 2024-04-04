@@ -5,102 +5,147 @@ final List<Map<String, dynamic>> expenseCategories = [
     "name": "Food",
     "image": "images/Food.png",
     "color": Colors.red,
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Shopping",
     "image": "images/Shopping.png",
     "color": Colors.blue,
+    "category": "Wants",
     "type": "Expense"
   },
   {
-    "name": "Transportation",
+    "name": "Transport",
     "image": "images/Transportation.png",
     "color": Colors.green,
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Home",
     "image": "images/Home.png",
     "color": Colors.purple,
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Bills & Fees",
     "image": "images/Bills & Fees.png",
     "color": Colors.orange,
+    "category": "Needs",
     "type": "Expense"
   },
   {
-    "name": "Entertainment",
+    "name": "Fun",
     "image": "images/Entertainment.png",
     "color": Colors.yellow,
+    "category": "Wants",
     "type": "Expense"
   },
   {
     "name": "Car",
     "image": "images/Car.png",
     "color": Colors.brown,
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Travel",
     "image": "images/Travel.png",
     "color": Colors.teal,
+    "category": "Wants",
     "type": "Expense"
   },
   {
-    "name": "Family & Personal",
+    "name": "Personal",
     "image": "images/Family & Personal.png",
     "color": Colors.cyan,
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Health",
     "image": "images/Health.png",
     "color": Colors.lime,
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Education",
     "image": "images/Education.png",
     "color": Colors.indigo,
+    "category": "Wants",
     "type": "Expense"
   },
   {
     "name": "Groceries",
     "image": "images/Groceries.png",
     "color": Color.fromARGB(255, 233, 138, 33),
+    "category": "Needs",
     "type": "Expense"
   },
   {
     "name": "Gifts",
     "image": "images/Gifts.png",
     "color": Colors.amber,
+    "category": "Wants",
     "type": "Expense"
   },
   {
-    "name": "Sports & Hobbies",
+    "name": "Sports",
     "image": "images/Sports & Hobbies.png",
     "color": Colors.deepOrange,
+    "category": "Wants",
     "type": "Expense"
   },
   {
     "name": "Beauty",
     "image": "images/Beauty.png",
     "color": Colors.lightGreen,
+    "category": "Wants",
     "type": "Expense"
   },
   {
     "name": "Work",
     "image": "images/Work.png",
     "color": Colors.grey,
+    "category": "Needs",
+    "type": "Expense"
+  },
+  {
+    "name": "Netflix",
+    "image": "images/netflix.png",
+    "color": Colors.grey,
+    "category": "Wants",
+    "type": "Expense"
+  },
+  {
+    "name": "Spotify",
+    "image": "images/spotify.png",
+    "color": Colors.grey,
+    "category": "Wants",
+    "type": "Expense"
+  },
+  {
+    "name": "Amazon",
+    "image": "images/prime.png",
+    "color": Colors.grey,
+    "category": "Wants",
+    "type": "Expense"
+  },
+  {
+    "name": "Savings",
+    "image": "images/savings.png",
+    "color": Colors.lime,
+    "category": "Savings",
     "type": "Expense"
   },
   {
     "name": "Other",
     "image": "images/Other.png",
     "color": Colors.black,
+    "category": "Wants",
     "type": "Expense"
   },
   // ... other categories with their corresponding image paths
