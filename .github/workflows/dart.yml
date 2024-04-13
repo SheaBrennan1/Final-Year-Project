@@ -34,10 +34,10 @@ jobs:
       # Analyze project source
       - name: Analyze project source
         run: dart analyze
-        working-directory: main/budget_buddy  # Update this path
+        working-directory: Final-Year-Project/main/budget_buddy  # Update this path
 
       # Run tests
       - name: Run tests
         run: dart test
-        working-directory: main/budget_buddy  # Update this path
+        working-directory: Final-Year-Project/main/budget_buddy  # Update this path
 
