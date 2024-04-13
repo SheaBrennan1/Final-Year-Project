@@ -23,8 +23,8 @@ jobs:
 
     - name: Install dependencies
       run: dart pub get
-      working-directory: Final-Year-Project/main/budget_buddy/pubspec.yaml
+      working-directory: main/budget_buddy
 
     - name: Run tests
       run: dart test
-      working-directory: Final-Year-Project/main/budget_buddy/pubspec.yaml
+      working-directory: main/budget_buddy
