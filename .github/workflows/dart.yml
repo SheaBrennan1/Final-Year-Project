@@ -6,15 +6,18 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: google/dart:latest
+      image: google/dart:latest  # Make sure this uses an image with the correct Dart SDK
 
     steps:
     - uses: actions/checkout@v2
 
+    - name: Setup Dart SDK
+      uses: dart-lang/setup-dart@v1.2  # Use this action to setup Dart SDK
+      with:
+        sdk-version: '>=3.1.5 <4.0.0'  # Specify the SDK version range required by your project
+
     - name: Install dependencies
-      working-directory: ./main/budget_buddy  # Set this to the directory containing pubspec.yaml
       run: dart pub get
 
     - name: Run tests
-      working-directory: ./main/budget_buddy  # Ensure this matches the directory containing pubspec.yaml
       run: dart test
