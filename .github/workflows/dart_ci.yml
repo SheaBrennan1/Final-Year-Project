@@ -21,6 +21,9 @@ jobs:
     - name: Check out code
       uses: actions/checkout@v2
 
+    - name: Change to project directory
+      run: cd Final-Year-Project/main/budget_buddy
+
     - name: Install dependencies
       run: dart pub get
 
