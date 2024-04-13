@@ -1,32 +1,18 @@
-import 'package:budget_buddy/home.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:budget_buddy/home.dart';
 
 void main() {
-  setUpAll(() async {
-    TestWidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: FirebaseOptions(
-        apiKey: "AIzaSyCHnqK-G12Gv7EkOQnbq3TtMPWtsC04eSA",
-        appId: "1:162550313227:android:d91dd69c9c8e3505aef20e",
-        messagingSenderId: "162550313227",
-        projectId: "budget-buddy-a49f1",
-        databaseURL:
-            "https://budget-buddy-a49f1-default-rtdb.europe-west1.firebasedatabase.app/",
-        storageBucket: "budget-buddy-a49f1.appspot.com",
-      ),
-    );
-  });
-
-  testWidgets('Should display the correct initial UI elements',
-      (WidgetTester tester) async {
+  testWidgets('Home Widget Test', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
     await tester.pumpWidget(MaterialApp(home: Home()));
 
-    // Ensure all async operations are completed
-    await tester.pumpAndSettle();
+    // Verify that the Home widget creates the expected initial widgets.
+    expect(find.text('Total Income'), findsOneWidget);
+    expect(find.text('Total Expenses'), findsOneWidget);
 
-    // Check for the presence of certain widgets.
-    expect(find.text('Total Balance'), findsOneWidget);
+    // You can also tap buttons and interact with the widget:
+    // await tester.tap(find.byIcon(Icons.add));
+    // await tester.pump();  // Rebuild the widget after the state has changed.
   });
 }
