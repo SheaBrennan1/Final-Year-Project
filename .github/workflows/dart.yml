@@ -24,7 +24,7 @@ jobs:
       # Install dependencies
       - name: Install dependencies
         run: dart pub get
-        working-directory: Final-Year-Project/main/budget_buddy  # Update this path
+        working-directory: main/budget_buddy  # Update this path
 
       # Optional: Verify formatting
       # - name: Verify formatting
@@ -34,10 +34,10 @@ jobs:
       # Analyze project source
       - name: Analyze project source
         run: dart analyze
-        working-directory: Final-Year-Project/main/budget_buddy  # Update this path
+        working-directory: main/budget_buddy  # Update this path
 
       # Run tests
       - name: Run tests
         run: dart test
-        working-directory: Final-Year-Project/main/budget_buddy  # Update this path
+        working-directory: main/budget_buddy  # Update this path
 
