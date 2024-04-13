@@ -150,8 +150,15 @@ class _ProfileCustomizationScreenState
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Edit Profile'),
+        title: Text(
+          'Edit Profile',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold, // Adjust as needed
+          ),
+        ),
         backgroundColor: Colors.blue,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(

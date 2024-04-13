@@ -15,7 +15,14 @@ class _FAQScreenState extends State<FAQScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('FAQ'),
+        title: Text(
+          'FAQ',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold, // Adjust as needed
+          ),
+        ),
+        centerTitle: true,
         backgroundColor: Colors.blue, // Customize with your color
       ),
       body: ListView(

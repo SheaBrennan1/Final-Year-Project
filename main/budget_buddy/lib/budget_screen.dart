@@ -98,8 +98,15 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Budgets'),
+        title: Text(
+          'Budgets',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold, // Adjust as needed
+          ),
+        ),
         backgroundColor: Colors.blue,
+        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Column(

@@ -49,7 +49,13 @@ class _ConfigureWarningsPageState extends State<ConfigureWarningsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Configure Warnings'),
+        title: Text(
+          'Configure Warnings',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold, // Adjust as needed
+          ),
+        ),
         backgroundColor: Colors.blue,
       ),
       body: SingleChildScrollView(

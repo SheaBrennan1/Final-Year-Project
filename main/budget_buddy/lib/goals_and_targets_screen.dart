@@ -179,7 +179,13 @@ class _GoalsAndTargetsScreenState extends State<GoalsAndTargetsScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Goals and Targets'),
+        title: Text(
+          'Goals and Targets',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold, // Adjust as needed
+          ),
+        ),
         backgroundColor: Colors.blue.shade400,
       ),
       body: SingleChildScrollView(

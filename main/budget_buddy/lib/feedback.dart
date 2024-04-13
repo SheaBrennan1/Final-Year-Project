@@ -22,8 +22,15 @@ class _FeedbackPageState extends State<FeedbackPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Feedback'),
+        title: Text(
+          'Feedback',
+          style: TextStyle(
+            fontFamily: 'Roboto',
+            fontWeight: FontWeight.bold, // Adjust as needed
+          ),
+        ),
         backgroundColor: Colors.blue,
+        centerTitle: true,
         iconTheme: IconThemeData(color: Colors.white),
       ),
       body: SingleChildScrollView(
