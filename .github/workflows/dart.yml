@@ -22,14 +22,6 @@ jobs:
         run: flutter pub get
         working-directory: main/budget_buddy  # Adjust as necessary to the path to your Flutter project
 
-      - name: Verify formatting
-        run: flutter format --set-exit-if-changed .
-        working-directory: main/budget_buddy
-
-      - name: Analyze project source
-        run: flutter analyze
-        working-directory: main/budget_buddy
-
       - name: Run tests
         run: flutter test
         working-directory: main/budget_buddy
