@@ -26,6 +26,5 @@ jobs:
     #   working-directory: main/budget_buddy
 
     - name: Run tests
-      run: flutter upgrade
       run: dart test
       working-directory: main/budget_buddy
