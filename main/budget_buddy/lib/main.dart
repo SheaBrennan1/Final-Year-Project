@@ -1,19 +1,10 @@
 import 'package:budget_buddy/budget_screen.dart';
 import 'package:budget_buddy/features/app/splash_screen/splash_screen.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/login_page.dart';
-import 'package:budget_buddy/features/user_auth/presentation/pages/sign_up_page.dart';
-import 'package:budget_buddy/mainscreen.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:budget_buddy/home.dart';
-import 'package:budget_buddy/statistics.dart';
-import 'package:budget_buddy/widgets/bottomnavigationbar.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-
-import 'data/model/add_date.dart';
 
 // Create a global instance of the FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =

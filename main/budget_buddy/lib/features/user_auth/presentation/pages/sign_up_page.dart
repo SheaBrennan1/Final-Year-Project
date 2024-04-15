@@ -1,5 +1,6 @@
 import 'package:budget_buddy/features/user_auth/presentation/pages/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/login_page.dart';
+import 'package:budget_buddy/home.dart';
 import 'package:budget_buddy/widgets/form_container_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -126,6 +127,16 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  bool isValidPassword(String password) {
+    // Regex to validate the password meets the following criteria:
+    // At least one uppercase letter, one lowercase letter, one number, and one special character
+    // and must be at least 8 characters long
+    String pattern =
+        r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$';
+    RegExp regExp = RegExp(pattern);
+    return regExp.hasMatch(password);
+  }
+
   void _signUpWithGoogle() async {
     User? user = await _auth.signUpWithGoogle();
 
@@ -138,9 +149,28 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   void _signUp() async {
-    String username = _usernameController.text;
-    String email = _emailController.text;
-    String password = _passwordController.text;
+    String username = _usernameController.text.trim();
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    if (!isValidPassword(password)) {
+      // Show an error if the password is not strong
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text("Weak Password"),
+          content: Text(
+              "Password must be at least 8 characters long and include a combination of upper and lower case letters, numbers, and special characters."),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+      return; // Exit the function if the password is not strong
+    }
 
     User? user =
         await _auth.signUpWithEmailAndPassword(email, password, username);
@@ -154,12 +184,13 @@ class _SignUpPageState extends State<SignUpPage> {
           .doc(user.uid)
           .set({
         'username': username,
-        // You can add more user-related settings here
       });
 
-      Navigator.pushNamed(context, "/home");
+      Navigator.of(context)
+          .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
     } else {
       print("Some error happened during sign up");
+      // Handle errors here, such as showing an error message
     }
   }
 }

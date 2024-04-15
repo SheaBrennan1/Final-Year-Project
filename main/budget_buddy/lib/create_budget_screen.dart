@@ -183,8 +183,6 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   @override
   Widget build(BuildContext context) {
     // Use your application's primary and accent colors
-    final Color primaryColor = Theme.of(context).primaryColor;
-    final Color accentColor = Theme.of(context).colorScheme.secondary;
 
     return Scaffold(
       appBar: AppBar(

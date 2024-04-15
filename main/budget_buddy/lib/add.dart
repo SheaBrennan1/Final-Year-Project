@@ -1,5 +1,4 @@
 import 'package:budget_buddy/budget_screen.dart';
-import 'package:budget_buddy/data/model/add_date.dart';
 import 'package:budget_buddy/expense_model.dart';
 import 'package:budget_buddy/home.dart';
 import 'package:budget_buddy/statistics.dart';
@@ -17,11 +16,10 @@ class Add_Screen extends StatefulWidget {
   const Add_Screen({super.key, this.expense});
 
   @override
-  State<Add_Screen> createState() => _Add_ScreenState();
+  State<Add_Screen> createState() => Add_ScreenState();
 }
 
-class _Add_ScreenState extends State<Add_Screen> {
-  late Box<Add_data> box;
+class Add_ScreenState extends State<Add_Screen> {
   DateTime date = DateTime.now();
   String? selctedItem;
   String? selctedItemi;

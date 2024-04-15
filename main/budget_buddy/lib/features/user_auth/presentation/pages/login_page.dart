@@ -1,10 +1,8 @@
-import 'package:budget_buddy/widgets/bottomnavigationbar.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:budget_buddy/home.dart';
-import 'package:budget_buddy/widgets/form_container_widget.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/sign_up_page.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/firebase_auth_implementation/firebase_auth_services.dart';
 import 'package:flutter_svg/flutter_svg.dart'; // Add this import for SVG support
@@ -14,15 +12,49 @@ class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  State<LoginPage> createState() => LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class LoginPageState extends State<LoginPage> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final FirebaseAuthService authService = FirebaseAuthService();
 
+  bool isValidEmail(String email) {
+    return RegExp(
+      r'^[a-zA-Z0-9.]+@[a-zA-Z0-9]+\.[a-zA-Z]+',
+    ).hasMatch(email);
+  }
+
+  bool isValidPassword(String password) {
+    return password.length >=
+        6; // Simple rule, can be expanded based on requirements
+  }
+
+  String sanitizeInput(String input) {
+    return input.replaceAll(RegExp(r'[^\w\s]+'),
+        ''); // Removes non-alphanumeric characters except spaces
+  }
+
   Future<void> signIn() async {
+    if (!isValidEmail(emailController.text) ||
+        !isValidPassword(passwordController.text)) {
+      showDialog(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text('Invalid Input'),
+          content: Text('Please enter a valid email and password.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Ok'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+      return;
+    }
+
     try {
       final user = await authService.signInWithEmailAndPassword(
         emailController.text,
@@ -39,14 +71,9 @@ class _LoginPageState extends State<LoginPage> {
           await FirebaseFirestore.instance
               .collection('userSettings')
               .doc(user.uid)
-              .set(
-                  {
-                'fcmToken': fcmToken,
-              },
-                  SetOptions(
-                      merge:
-                          true)); // Use SetOptions to merge with existing document
-          print("FCM Token saved successfully for user: ${user.uid}");
+              .set({
+            'fcmToken': sanitizeInput(fcmToken),
+          }, SetOptions(merge: true));
         } else {
           print("FCM Token is null");
         }
