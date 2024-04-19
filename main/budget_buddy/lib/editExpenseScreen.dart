@@ -17,8 +17,26 @@ class EditExpenseScreen extends StatefulWidget {
 class _EditExpenseScreenState extends State<EditExpenseScreen> {
   late TextEditingController _amountController;
   late TextEditingController _descriptionController;
-  late String _selectedCategory;
-  late DateTime _selectedDate;
+  String? _selectedCategory;
+  DateTime? _selectedDate;
+  String? _selectedRecurrence;
+  String? _selectedReminder;
+
+  final List<String> _recurrenceOptions = [
+    'Never',
+    'Every Minute',
+    'Every Day',
+    'Every 3 Days',
+    'Every Week'
+  ];
+
+  final List<String> _reminderOptions = [
+    'Never',
+    '1 Minute Before',
+    '1 Day Before',
+    '3 Days Before',
+    '1 Week Before'
+  ];
 
   @override
   void initState() {
@@ -29,18 +47,20 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
         TextEditingController(text: widget.expense.description);
     _selectedCategory = widget.expense.category;
     _selectedDate = widget.expense.date;
+    _selectedRecurrence = widget.expense.recurrence;
+    _selectedReminder = widget.expense.reminder;
   }
 
   void updateExpense() async {
     Expense updatedExpense = Expense(
       key: widget.expense.key,
-      category: _selectedCategory,
+      category: _selectedCategory!,
       amount: double.parse(_amountController.text),
       description: _descriptionController.text,
-      date: _selectedDate,
+      date: _selectedDate!,
       type: widget.expense.type,
-      recurrence: widget.expense.recurrence,
-      reminder: widget.expense.reminder,
+      recurrence: _selectedRecurrence!,
+      reminder: _selectedReminder!,
     );
 
     DatabaseReference ref = FirebaseDatabase.instance.ref().child("expenses");
@@ -57,64 +77,102 @@ class _EditExpenseScreenState extends State<EditExpenseScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Edit Expense'),
+        backgroundColor: Colors.blue,
       ),
-      body: Padding(
-        padding: EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _amountController,
-              decoration: InputDecoration(
-                labelText: 'Amount',
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              TextField(
+                controller: _amountController,
+                decoration: InputDecoration(labelText: 'Amount'),
+                keyboardType: TextInputType.number,
               ),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Description',
+              TextField(
+                controller: _descriptionController,
+                decoration: InputDecoration(labelText: 'Description'),
               ),
-            ),
-            ListTile(
-              title: Text('Category: $_selectedCategory'),
-              onTap: () async {
-                final result = await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => ExpenseCategoriesScreen()),
-                );
-
-                if (result != null && result is Map) {
+              ListTile(
+                title: Text(
+                    'Category: ${_selectedCategory ?? "Select a Category"}'),
+                onTap: () async {
+                  final result = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => ExpenseCategoriesScreen()),
+                  );
+                  if (result != null && result is Map) {
+                    setState(() {
+                      _selectedCategory = result['name'];
+                    });
+                  }
+                },
+              ),
+              ListTile(
+                title: Text(
+                    'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate ?? DateTime.now())}'),
+                onTap: () async {
+                  DateTime? newDate = await showDatePicker(
+                    context: context,
+                    initialDate: _selectedDate ?? DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime(2100),
+                  );
+                  if (newDate != null) {
+                    setState(() {
+                      _selectedDate = newDate;
+                    });
+                  }
+                },
+              ),
+              DropdownButtonFormField<String>(
+                value: _selectedRecurrence,
+                onChanged: (String? newValue) {
                   setState(() {
-                    _selectedCategory = result['name'];
+                    _selectedRecurrence = newValue!;
                   });
-                }
-              },
-            ),
-            ListTile(
-              title: Text(
-                  'Date: ${DateFormat('yyyy-MM-dd').format(_selectedDate)}'),
-              onTap: () async {
-                DateTime? newDate = await showDatePicker(
-                  context: context,
-                  initialDate: _selectedDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                );
-
-                if (newDate != null) {
-                  setState(() {
-                    _selectedDate = newDate;
-                  });
-                }
-              },
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: updateExpense,
-              child: Text('Update Expense'),
-            )
-          ],
+                },
+                items: _recurrenceOptions
+                    .map<DropdownMenuItem<String>>((String value) {
+                  return DropdownMenuItem<String>(
+                    value: value,
+                    child: Text(value),
+                  );
+                }).toList(),
+                decoration: InputDecoration(
+                  labelText: 'Recurrence',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              if (_selectedRecurrence !=
+                  'Never') // Only show reminders if recurrence is not 'Never'
+                DropdownButtonFormField<String>(
+                  value: _selectedReminder,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedReminder = newValue!;
+                    });
+                  },
+                  items: _reminderOptions
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                  decoration: InputDecoration(
+                    labelText: 'Reminder',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: updateExpense,
+                child: Text('Update Expense'),
+              )
+            ],
+          ),
         ),
       ),
     );

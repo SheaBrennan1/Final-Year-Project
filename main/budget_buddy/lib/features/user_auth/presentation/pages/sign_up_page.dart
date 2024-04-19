@@ -4,6 +4,7 @@ import 'package:budget_buddy/home.dart';
 import 'package:budget_buddy/widgets/form_container_widget.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -84,15 +85,12 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.black
-                        .withOpacity(0.4), // Semi-transparent black container
-                    borderRadius:
-                        BorderRadius.circular(20), // Adds rounded corners
+                    color: Colors.black.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(12.0),
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 8.0,
-                      horizontal: 50), // Adjust margins as needed
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 50),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -128,9 +126,6 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   bool isValidPassword(String password) {
-    // Regex to validate the password meets the following criteria:
-    // At least one uppercase letter, one lowercase letter, one number, and one special character
-    // and must be at least 8 characters long
     String pattern =
         r'^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$';
     RegExp regExp = RegExp(pattern);
@@ -178,19 +173,22 @@ class _SignUpPageState extends State<SignUpPage> {
     if (user != null) {
       print("User is successfully created with username: ${user.displayName}");
 
+      // Retrieve the FCM token
+      String? token = await FirebaseMessaging.instance.getToken();
+
       // Store the user's UID and username in Firestore
       await FirebaseFirestore.instance
           .collection('userSettings')
           .doc(user.uid)
           .set({
         'username': username,
+        'fcmToken': token,
       });
 
       Navigator.of(context)
           .pushReplacement(MaterialPageRoute(builder: (context) => Home()));
     } else {
       print("Some error happened during sign up");
-      // Handle errors here, such as showing an error message
     }
   }
 }

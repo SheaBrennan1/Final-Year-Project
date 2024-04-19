@@ -5,8 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:budget_buddy/home.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/sign_up_page.dart';
 import 'package:budget_buddy/features/user_auth/presentation/pages/firebase_auth_implementation/firebase_auth_services.dart';
-import 'package:flutter_svg/flutter_svg.dart'; // Add this import for SVG support
-import 'package:google_sign_in/google_sign_in.dart'; // Add this import for Google Sign-In
+import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -27,13 +26,11 @@ class LoginPageState extends State<LoginPage> {
   }
 
   bool isValidPassword(String password) {
-    return password.length >=
-        6; // Simple rule, can be expanded based on requirements
+    return password.length >= 6;
   }
 
   String sanitizeInput(String input) {
-    return input.replaceAll(RegExp(r'[^\w\s]+'),
-        ''); // Removes non-alphanumeric characters except spaces
+    return input.replaceAll(RegExp(r'[^\w\s]+'), '');
   }
 
   Future<void> signIn() async {
@@ -64,7 +61,7 @@ class LoginPageState extends State<LoginPage> {
       if (user != null) {
         // Fetch the FCM token
         String? fcmToken = await FirebaseMessaging.instance.getToken();
-        print("FCM Token: $fcmToken"); // For debugging purposes
+        print("FCM Token: $fcmToken");
 
         // Update Firestore with the FCM token
         if (fcmToken != null) {
@@ -72,7 +69,7 @@ class LoginPageState extends State<LoginPage> {
               .collection('userSettings')
               .doc(user.uid)
               .set({
-            'fcmToken': sanitizeInput(fcmToken),
+            'fcmToken': fcmToken,
           }, SetOptions(merge: true));
         } else {
           print("FCM Token is null");
@@ -85,7 +82,7 @@ class LoginPageState extends State<LoginPage> {
           context: context,
           builder: (context) => AlertDialog(
             title: Text('Login Failed'),
-            content: Text('User object returned is null.'),
+            content: Text('Incorrect Login details'),
             actions: <Widget>[
               TextButton(
                 child: Text('Ok'),
@@ -96,12 +93,12 @@ class LoginPageState extends State<LoginPage> {
         );
       }
     } catch (e) {
-      print("Login Error: $e"); // Print the error to the console for debugging
+      print("Login Error: $e");
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text('Login Error'),
-          content: Text(e.toString()), // Provide specific error message
+          content: Text(e.toString()),
           actions: <Widget>[
             TextButton(
               child: Text('Ok'),
@@ -131,11 +128,9 @@ class LoginPageState extends State<LoginPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(
-                    height: MediaQuery.of(context).size.height *
-                        0.1), // Adjusted the top spacing
+                SizedBox(height: MediaQuery.of(context).size.height * 0.1),
                 Image.asset(
-                  'images/splash_screen.png', // Assuming your logo is named 'logo.png' in the assets
+                  'images/splash_screen.png',
                   width: MediaQuery.of(context).size.width * 0.4,
                   height: MediaQuery.of(context).size.height * 0.2,
                   fit: BoxFit.contain,
@@ -149,25 +144,21 @@ class LoginPageState extends State<LoginPage> {
                     color: Colors.black,
                   ),
                 ),
-                SizedBox(
-                    height:
-                        32.0), // Added some space between the title and the form
+                SizedBox(height: 32.0),
                 TextFormField(
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white, // Set the fill color to white
+                    fillColor: Colors.white,
                     hintText: 'Email',
-                    hintStyle: TextStyle(
-                        color: Colors.black54), // Hint text style if needed
+                    hintStyle: TextStyle(color: Colors.black54),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.0),
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  style: TextStyle(
-                      color: Colors.black), // Set the input text color to black
+                  style: TextStyle(color: Colors.black),
                 ),
                 SizedBox(height: 12.0),
                 TextFormField(
@@ -175,17 +166,15 @@ class LoginPageState extends State<LoginPage> {
                   obscureText: true,
                   decoration: InputDecoration(
                     filled: true,
-                    fillColor: Colors.white, // Set the fill color to white
+                    fillColor: Colors.white,
                     hintText: 'Password',
-                    hintStyle: TextStyle(
-                        color: Colors.black54), // Hint text style if needed
+                    hintStyle: TextStyle(color: Colors.black54),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.0),
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  style: TextStyle(
-                      color: Colors.black), // Set the input text color to black
+                  style: TextStyle(color: Colors.black),
                 ),
                 SizedBox(height: 24.0),
                 ElevatedButton(
@@ -200,7 +189,7 @@ class LoginPageState extends State<LoginPage> {
                   padding: const EdgeInsets.symmetric(vertical: 12.0),
                   child: OutlinedButton.icon(
                     icon: Image.asset(
-                      'images/google_logo.svg', // Make sure the path and file extension are correct
+                      'images/google_logo.svg',
                       width: 30,
                       height: 30,
                     ),
@@ -248,7 +237,6 @@ class LoginPageState extends State<LoginPage> {
                               .doc(user?.uid)
                               .set({
                             'username': user?.displayName,
-                            // You can add more user-related settings here
                           });
 
                           if (user != null) {
@@ -257,7 +245,6 @@ class LoginPageState extends State<LoginPage> {
                                 MaterialPageRoute(
                                     builder: (context) => Home()));
                           } else {
-                            // Handle null user scenario
                             showDialog(
                               context: context,
                               builder: (context) => AlertDialog(
@@ -276,22 +263,18 @@ class LoginPageState extends State<LoginPage> {
                         }
                       } catch (error) {
                         print(error);
-                        // Handle error (e.g., user cancelled the sign-in process)
                       }
                     },
                   ),
                 ),
                 Container(
                   decoration: BoxDecoration(
-                    color: Colors.black
-                        .withOpacity(0.4), // Semi-transparent black container
-                    borderRadius:
-                        BorderRadius.circular(20), // Adds rounded corners
+                    color: Colors.black.withOpacity(0.4),
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   padding: const EdgeInsets.all(12.0),
-                  margin: const EdgeInsets.symmetric(
-                      vertical: 8.0,
-                      horizontal: 50), // Adjust margins as needed
+                  margin:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 50),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [

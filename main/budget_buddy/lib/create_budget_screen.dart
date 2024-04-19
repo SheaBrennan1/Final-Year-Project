@@ -196,86 +196,108 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                "Select Budget Type",
-                style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: primaryColor),
-              ),
-              ListTile(
-                title: const Text('Standard 50/30/20 Budget'),
-                leading: Radio<BudgetType>(
-                  value: BudgetType.standard,
-                  groupValue: _selectedBudgetType,
-                  onChanged: (BudgetType? value) {
-                    setState(() {
-                      _selectedBudgetType = value!;
-                    });
-                  },
-                ),
-              ),
-              ListTile(
-                title: const Text('Custom Budget'),
-                leading: Radio<BudgetType>(
-                  value: BudgetType.custom,
-                  groupValue: _selectedBudgetType,
-                  onChanged: (BudgetType? value) {
-                    setState(() {
-                      _selectedBudgetType = value!;
-                    });
-                  },
-                ),
-              ),
-              if (_selectedBudgetType == BudgetType.standard)
-                _buildStandardBudgetForm()
-              else
-                _buildCustomBudgetForm(),
+              _buildCustomBudgetForm(),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed:
-                    _saveBudget, // Make sure to implement the _saveBudget method
-                child: Text('Save Budget'),
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: accentColor, // Button text color
+              Center(
+                // Center the button
+                child: ElevatedButton(
+                  onPressed:
+                      _saveBudget, // Make sure to implement the _saveBudget method
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        vertical: 15.0, horizontal: 30.0), // Increased padding
+                    child: Text(
+                      'Save Budget',
+                      style: TextStyle(fontSize: 18), // Larger font size
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: accentColor, // Button text color
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(
+                            8) // Optional: Rounded corners
+                        ),
+                    elevation: 5, // Optional: Adds shadow
+                  ),
                 ),
               ),
             ],
           ),
         ),
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Implement your FAB action here
+          Navigator.of(context)
+              .push(MaterialPageRoute(builder: (context) => Add_Screen()));
         },
         child: Icon(Icons.add),
-        backgroundColor: accentColor, // Use the accent color for the FAB
+        backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomAppBar(
         color: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: [
+          children: <Widget>[
             IconButton(
-              icon: Icon(Icons.home, color: primaryColor),
-              onPressed: () {/* Navigate to Home */},
-            ),
+                icon: Icon(
+                  Icons.home,
+                ),
+                onPressed: () {
+                  _onItemTapped(0);
+                }),
             IconButton(
-              icon: Icon(Icons.bar_chart, color: primaryColor),
-              onPressed: () {/* Navigate to Statistics */},
-            ),
+                icon: Icon(Icons.bar_chart),
+                onPressed: () {
+                  _onItemTapped(1);
+                }),
             IconButton(
-              icon: Icon(Icons.savings_sharp, color: accentColor),
-              onPressed: () {/* Navigate to Budget Screen */},
-            ),
+                icon: Icon(Icons.savings_sharp, color: Colors.blue),
+                onPressed: () {
+                  _onItemTapped(2);
+                }),
             IconButton(
-              icon: Icon(Icons.account_circle, color: primaryColor),
-              onPressed: () {/* Navigate to User Profile Screen */},
-            ),
+                icon: Icon(Icons.account_circle),
+                onPressed: () {
+                  _onItemTapped(3);
+                }),
           ],
         ),
       ),
+    );
+  }
+
+  void _showBudgetInfo(String title, String description) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: Text(description),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildRadioTileWithDialog(
+      String title, BudgetType type, String description) {
+    return Radio<BudgetType>(
+      value: type,
+      groupValue: _selectedBudgetType,
+      onChanged: (BudgetType? value) {
+        setState(() {
+          _selectedBudgetType = value!;
+        });
+      },
     );
   }
 
@@ -406,92 +428,109 @@ class _CreateBudgetScreenState extends State<CreateBudgetScreen> {
   }
 
   Widget _buildCustomBudgetForm() {
-    // Implement your custom budget form here
     return Column(
       children: [
-        // Your existing widgets for custom budget creation
-        Text("Custom Budget Form Placeholder"),
+        TextFormField(
+          controller: _budgetNameController,
+          decoration: InputDecoration(labelText: 'Budget Name'),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter a budget name';
+            }
+            return null;
+          },
+        ),
+        DropdownButtonFormField<String>(
+          value: _recurrence,
+          decoration: InputDecoration(labelText: 'Recurrence'),
+          onChanged: (String? newValue) {
+            setState(() {
+              _recurrence = newValue!;
+            });
+          },
+          items: _recurrenceOptions.map((String value) {
+            return DropdownMenuItem<String>(
+              value: value,
+              child: Text(value),
+            );
+          }).toList(),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text("Total Budget: ",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+              Text("£${_totalBudget.toStringAsFixed(2)}",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ),
+        ListView.builder(
+          physics: NeverScrollableScrollPhysics(),
+          shrinkWrap: true,
+          itemCount: _selectedCategories.length,
+          itemBuilder: (context, index) {
+            String category = _selectedCategories.keys.elementAt(index);
+            return Column(
+              children: [
+                CheckboxListTile(
+                  title: Row(
+                    children: [
+                      Image.asset(
+                        ExpenseCategoriesScreen.getImagePathForCategory(
+                            category),
+                        height: 30,
+                        width: 30,
+                      ),
+                      SizedBox(width: 10),
+                      Text(category),
+                    ],
+                  ),
+                  value: _selectedCategories[category],
+                  onChanged: (bool? value) {
+                    setState(() {
+                      _selectedCategories[category] = value!;
+                      if (!value) {
+                        _categoryBudgetControllers[category]!.text =
+                            '0'; // Reset the budget if unchecked
+                        _updateTotalBudget();
+                      }
+                    });
+                  },
+                  secondary: _selectedCategories[category]!
+                      ? Container(
+                          width: 100,
+                          child: TextFormField(
+                            controller: _categoryBudgetControllers[category],
+                            decoration: InputDecoration(
+                              labelText: '£',
+                              border: OutlineInputBorder(),
+                            ),
+                            keyboardType: TextInputType.number,
+                            onChanged: (value) {
+                              _updateTotalBudget();
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Enter amount';
+                              }
+                              if (double.tryParse(value) == null) {
+                                return 'Please enter a valid number';
+                              }
+                              return null;
+                            },
+                          ),
+                        )
+                      : null,
+                ),
+              ],
+            );
+          },
+        ),
       ],
     );
-  }
-
-  void _autoFillStandardBudget() {
-    if (_categoryBudgetControllers.containsKey('Needs') &&
-        _categoryBudgetControllers.containsKey('Wants') &&
-        _categoryBudgetControllers.containsKey('Savings')) {
-      const double totalBudget =
-          1000; // Example total budget, replace with actual
-      _categoryBudgetControllers['Needs']!.text =
-          (totalBudget * 0.5).toString(); // 50%
-      _categoryBudgetControllers['Wants']!.text =
-          (totalBudget * 0.3).toString(); // 30%
-      _categoryBudgetControllers['Savings']!.text =
-          (totalBudget * 0.2).toString(); // 20%
-      _updateTotalBudget();
-
-      // Set selected categories for 50/30/20 budget
-      setState(() {
-        _selectedCategories['Needs'] = true;
-        _selectedCategories['Wants'] = true;
-        _selectedCategories['Savings'] = true;
-      });
-    } else {
-      print("One or more category budget controllers are not initialized.");
-      // Handle the case where controllers are not initialized
-    }
-  }
-
-  void _clearBudgetAllocation() {
-    _categoryBudgetControllers.forEach((key, controller) {
-      controller.clear();
-    });
-    _updateTotalBudget();
-  }
-
-  List<Widget> _buildCategorySelectionWidgets() {
-    return _selectedCategories.keys.map((category) {
-      return CheckboxListTile(
-        title: Row(
-          children: [
-            Image.asset(
-              ExpenseCategoriesScreen.getImagePathForCategory(category),
-              height: 30,
-              width: 30,
-            ),
-            SizedBox(width: 10),
-            Text(category),
-          ],
-        ),
-        value: _selectedCategories[category],
-        onChanged: (bool? value) {
-          setState(() {
-            _selectedCategories[category] = value!;
-            if (!value) _categoryBudgetControllers[category]!.clear();
-            _updateTotalBudget();
-          });
-        },
-        secondary: _selectedCategories[category]!
-            ? Container(
-                width: 100,
-                child: TextFormField(
-                  controller: _categoryBudgetControllers[category],
-                  decoration: InputDecoration(
-                    labelText: '£',
-                    border: OutlineInputBorder(),
-                  ),
-                  keyboardType: TextInputType.number,
-                  validator: (value) {
-                    if (_selectedCategories[category]! &&
-                        (value == null || value.isEmpty)) {
-                      return 'Enter amount';
-                    }
-                    return null;
-                  },
-                ),
-              )
-            : null,
-      );
-    }).toList();
   }
 
 // Moved outside _CreateBudgetScreenState

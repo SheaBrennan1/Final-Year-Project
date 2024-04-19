@@ -23,14 +23,14 @@ class Budget {
 
   factory Budget.fromMap(Map<String, dynamic> map) {
     return Budget(
-      id: map['id'] as String? ?? 'default_id', // Provide a default value
+      id: map['id'] as String? ?? 'default_id',
       name: map['name'] as String? ?? 'Unnamed Budget',
       startDate: DateTime.parse(map['startDate']),
       endDate: DateTime.parse(map['endDate']),
       categoryAllocations: Map<String, double>.from(map['categoryAllocations']),
       type: map['type'] == 'BudgetType.standard'
           ? BudgetType.standard
-          : BudgetType.custom, // Convert string back to enum
+          : BudgetType.custom,
     );
   }
 

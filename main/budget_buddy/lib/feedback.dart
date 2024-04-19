@@ -26,7 +26,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
           'Feedback',
           style: TextStyle(
             fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold, // Adjust as needed
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.blue,
@@ -48,8 +48,7 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 controller: _titleController,
                 decoration: InputDecoration(
                   hintText: 'Enter your feedback title...',
-                  hintStyle: TextStyle(
-                      color: Colors.black), // Change hint text color to black
+                  hintStyle: TextStyle(color: Colors.black),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -57,14 +56,12 @@ class _FeedbackPageState extends State<FeedbackPage> {
                   filled: true,
                 ),
               ),
-
               SizedBox(height: 16),
               Text(
                 'Your feedback helps us improve. Please select a topic and provide as much detail as possible.',
                 style: TextStyle(fontSize: 16, color: Colors.grey[700]),
               ),
               SizedBox(height: 16),
-              // Continue with the rest of your form...
               Text(
                 'Select Topic:',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -115,7 +112,6 @@ class _FeedbackPageState extends State<FeedbackPage> {
                 ),
                 maxLines: 5,
               ),
-
               SizedBox(height: 16),
               Text(
                 'Your Environment:\n- Operating System: ${Platform.operatingSystem}\n- Version: ${Platform.operatingSystemVersion}',
@@ -231,14 +227,11 @@ class _FeedbackPageState extends State<FeedbackPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Feedback submitted successfully')),
       );
-      // Optionally clear the form or navigate the user away from the feedback page
       _titleController.clear();
       _detailsController.clear();
-      // You can navigate the user back or to a 'thank you' page
       Navigator.pop(context);
     } catch (e) {
-      // Handle the error, perhaps by showing an error message
-      print('Error submitting feedback: $e'); // Consider logging the error
+      print('Error submitting feedback: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error submitting feedback. Please try again.')),
       );

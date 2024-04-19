@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
-// Create a global instance of the FlutterLocalNotificationsPlugin
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 
@@ -26,7 +25,6 @@ Future<void> main() async {
     ),
   );
 
-  // Notification plugin initialization
   const AndroidInitializationSettings initializationSettingsAndroid =
       AndroidInitializationSettings('@mipmap/ic_launcher');
   final InitializationSettings initializationSettings =
@@ -60,7 +58,6 @@ class _MyAppState extends State<MyApp> {
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       print('User granted permission');
-      // Get the token each time the application launches
       getToken();
     }
   }
@@ -68,7 +65,6 @@ class _MyAppState extends State<MyApp> {
   void getToken() async {
     String? token = await FirebaseMessaging.instance.getToken();
     print("FCM Token: $token");
-    // Consider sending the token to your server for user device tracking
   }
 
   void listenForNotification() {
@@ -79,10 +75,8 @@ class _MyAppState extends State<MyApp> {
 
       if (message.notification != null) {
         print('Message also contained a notification: ${message.notification}');
-        // Extract budget name from message data
         String? budgetName = message.data['budgetName'];
         String type = message.data['type'];
-        // Ensure to call _showNotification with both parameters
         _showNotification(message.notification!, budgetName, type);
       }
     });
@@ -90,7 +84,6 @@ class _MyAppState extends State<MyApp> {
 
   Future<void> _showNotification(
       RemoteNotification notification, String? budgetName, String type) async {
-    // Notification details remain the same
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
         AndroidNotificationDetails(
       'new_messages_channel', // Channel ID
@@ -106,7 +99,6 @@ class _MyAppState extends State<MyApp> {
         NotificationDetails(android: androidPlatformChannelSpecifics);
 
     if (type == "BUDGET_OVERUSE") {
-      // Update notification body to include the budget name dynamically
       await flutterLocalNotificationsPlugin.show(
         0,
         notification.title,
@@ -136,15 +128,9 @@ class _MyAppState extends State<MyApp> {
         '/budget_screen': (context) => BudgetScreen(),
       },
       theme: ThemeData(
-        // Define the default brightness and colors.
         primarySwatch: Colors.teal,
         hintColor: Colors.amber,
-
-        // Define the default font family.
         fontFamily: 'Georgia',
-
-        // Define the default `TextTheme`. Use this to specify the default
-        // text styling for headlines, titles, bodies of text, and more.
         textTheme: TextTheme(
           headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
           headline6: TextStyle(fontSize: 36.0, fontStyle: FontStyle.italic),

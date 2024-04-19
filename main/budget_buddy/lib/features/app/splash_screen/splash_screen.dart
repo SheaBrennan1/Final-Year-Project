@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:budget_buddy/home.dart'; // Import the home screen or whichever screen you navigate to after the splash screen
+import 'package:budget_buddy/home.dart';
 
 class SplashScreen extends StatefulWidget {
   final Widget child;
@@ -34,8 +34,8 @@ class _SplashScreenState extends State<SplashScreen> {
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
             colors: [
-              Colors.blue, // Lighter shade of teal for the top
-              Colors.blue, // Darker shade of teal for the bottom
+              Colors.blue,
+              Colors.blue,
             ],
           ),
         ),

@@ -36,7 +36,6 @@ class _ConfigureWarningsPageState extends State<ConfigureWarningsPage> {
       budgetThresholdWarningEnabled =
           prefs.getBool('budgetThresholdWarningEnabled') ?? false;
       goalWarningEnabled = prefs.getBool('goalWarningEnabled') ?? false;
-      // Assuming the thresholds are also stored, you can load them here as well
     });
   }
 
@@ -53,7 +52,7 @@ class _ConfigureWarningsPageState extends State<ConfigureWarningsPage> {
           'Configure Warnings',
           style: TextStyle(
             fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold, // Adjust as needed
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.blue,
@@ -113,33 +112,6 @@ class _ConfigureWarningsPageState extends State<ConfigureWarningsPage> {
                 }
               },
             ),
-            Divider(),
-            SwitchListTile(
-              title: Text("Enable Goal Warnings"),
-              subtitle: Text(
-                  "Receive warnings when you are close to reaching a financial goal."),
-              value: goalWarningEnabled,
-              onChanged: (bool value) {
-                setState(() {
-                  goalWarningEnabled = value;
-                });
-                setPreference('goalWarningEnabled', value);
-              },
-            ),
-            if (goalWarningEnabled)
-              Padding(
-                padding: const EdgeInsets.only(left: 16.0),
-                child: TextFormField(
-                  initialValue: goalThresholdPercentage.toString(),
-                  decoration: InputDecoration(
-                    labelText: 'Goal Threshold (%)',
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (String value) {
-                    goalThresholdPercentage = double.tryParse(value) ?? 90.0;
-                  },
-                ),
-              ),
             SizedBox(height: 20),
             Center(
               child: ElevatedButton(
@@ -166,8 +138,7 @@ class _ConfigureWarningsPageState extends State<ConfigureWarningsPage> {
         backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomAppBar(
-        // Omitting shape property
-        color: Colors.white, // Set your desired color
+        color: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[

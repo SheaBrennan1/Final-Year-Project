@@ -88,7 +88,6 @@ class _ProfileCustomizationScreenState
 
   Widget _buildBottomNavigationBar() {
     return BottomAppBar(
-      // Remove the shape property or set it to null for a rectangular look
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Row(

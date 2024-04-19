@@ -2,27 +2,72 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp();
 
-exports.scheduledFunction = functions.pubsub.schedule('every 1 hour').onRun(async (context) => {
+exports.scheduledFunction = functions.pubsub.schedule('every 1 minutes').onRun(async (context) => {
     const now = new Date();
+    console.log(`Function triggered at: ${now.toISOString()}`); // Log the current time at function start
+
     const expensesRef = admin.database().ref('/expenses');
     const snapshot = await expensesRef.once('value');
     const expenses = snapshot.val();
 
+    if (!expenses) {
+        console.log('No expenses found.'); // Log if no expenses are found in the database
+        return null;
+    }
+
     for (const userId in expenses) {
         for (const expenseId in expenses[userId]) {
             const expense = expenses[userId][expenseId];
-            if (expense.recurrence !== 'Never') {
-                const nextDueDate = calculateNextDueDate(expense.date, expense.recurrence);
-                if (nextDueDate <= now) {
-                    const newExpense = {...expense, recurrence: 'Never', date: now.toISOString()};
-                    await expensesRef.child(userId).push(newExpense);
-                }
+            if (!expense || expense.recurrence === 'Never') {
+                console.log(`Skipping expenseId: ${expenseId} for userId: ${userId} (No expense data or marked as 'Never')`);
+                continue;
+            }
+
+            console.log(`Processing expenseId: ${expenseId} for userId: ${userId}`);
+            const nextDueDate = calculateNextDueDate(now, expense.recurrence);
+            console.log(`ExpenseId: ${expenseId}, Next Due Date: ${nextDueDate.toISOString()}, Now: ${now.toISOString()}`);
+
+            if (nextDueDate <= now) {
+                console.log(`Creating new expense for expenseId: ${expenseId} as it's due.`);
+                const newExpense = {
+                    ...expense,
+                    date: now.toISOString(),
+                    recurrence: getNextRecurrence(expense.recurrence)
+                };
+                await expensesRef.child(userId).push(newExpense);
             }
         }
     }
 
     return null;
 });
+
+function calculateNextDueDate(lastDate, recurrence) {
+    const date = new Date(lastDate);
+    switch (recurrence) {
+        case 'Every Minute':
+            date.setMinutes(date.getMinutes() - 1);
+            break;
+        case 'Every Day':
+            date.setDate(date.getDate() + 1);
+            break;
+        case 'Every 3 Days':
+            date.setDate(date.getDate() + 3);
+            break;
+        case 'Every Week':
+            date.setDate(date.getDate() + 7);
+            break;
+    }
+    console.log(`Calculated next due date as: ${date.toISOString()} for recurrence type: ${recurrence}`);
+    return date;
+}
+
+function getNextRecurrence(recurrence) {
+    // Assuming logic to determine the next recurrence
+    console.log(`Determining next recurrence for type: ${recurrence}`);
+    return 'Never'; // Simplified for this example
+}
+
 
 exports.checkYearlyGoal = functions.database.ref('/expenses/{userId}/{expenseId}')
     .onCreate(async (snapshot, context) => {
@@ -75,8 +120,9 @@ exports.onExpenseAdded = functions.database.ref('/expenses/{userId}/{expenseId}'
             console.log('No user settings found for:', userId);
             return false; // Default to false if no settings are found
         }
-    
+
         const userSettings = doc.data();
+        console.log("budgetnot stting" + userSettings.budgetWarningsEnabled);
         return userSettings.budgetWarningsEnabled; // Assumes there is a 'budgetWarningsEnabled' field
     }
 
@@ -144,12 +190,12 @@ async function notifyUserAboutBudgetOveruse(userId, overusedAmount, overusedBudg
     }
 
     const userSettings = doc.data();
+    console.log(`User Settings: ${JSON.stringify(userSettings)}`);
+
     const token = userSettings.fcmToken;
-    
-    if (!token) {
-        console.log('No FCM token found for user:', userId);
-        return;
-    }
+    console.log(`Token: ` + token);
+
+    console.log(`FCM Token for user ${userId}: ${token}`);
 
     const message = {
         notification: {
@@ -173,24 +219,7 @@ async function notifyUserAboutBudgetOveruse(userId, overusedAmount, overusedBudg
         });
 }
 
-function calculateNextDueDate(lastDate, recurrence) {
-    const date = new Date(lastDate);
-    switch (recurrence) {
-        case 'Every Minute':
-            date.setMinutes(date.getMinutes() + 1);
-            break;
-        case 'Every Day':
-            date.setDate(date.getDate() + 1);
-            break;
-        case 'Every 3 Days':
-            date.setDate(date.getDate() + 3);
-            break;
-        case 'Every Week':
-            date.setDate(date.getDate() + 7);
-            break;
-    }
-    return date;
-}
+
 
 function getReminderMinutesBefore(reminder) {
     switch (reminder) {
@@ -229,7 +258,7 @@ async function sendNotification(userId, expense) {
     }
 }
 
-exports.checkYearlyGoal = functions.database.ref('/expenses/{userId}/{expenseId}')
+/*exports.checkYearlyGoal = functions.database.ref('/expenses/{userId}/{expenseId}')
     .onCreate(async (snapshot, context) => {
         const { userId } = context.params;
         const newEntry = snapshot.val();
@@ -253,7 +282,7 @@ exports.checkYearlyGoal = functions.database.ref('/expenses/{userId}/{expenseId}
             // Goal is met, send a notification
             await notifyUserYearlyGoalReached(userId, yearlyTarget);
         }
-    });
+    });*/
 
     async function checkIfYearlyTotatNotificationEnabled(userId) {
         // Retrieve the user's settings from Firestore to check if budget warnings are enabled
@@ -302,13 +331,19 @@ async function notifyUserYearlyGoalReached(userId, yearlyTarget) {
         return;
     }
 
+    console.log(`Fetching user settings for user: ${userId}`);
+
     const userSettings = doc.data();
+    console.log(`User Settings: ` + userSettings);
+
+    console.log(`User Settings: ${JSON.stringify(userSettings)}`);
+
+
     const token = userSettings.fcmToken;
-    
-    if (!token) {
-        console.log(`No FCM token found for user: ${userId}`);
-        return;
-    }
+    console.log(`Token: ` + token);
+
+    console.log(`FCM Token for user ${userId}: ${token}`);
+
 
     // Customize the notification message
     const message = {

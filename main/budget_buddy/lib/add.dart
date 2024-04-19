@@ -11,7 +11,7 @@ import 'package:budget_buddy/features/app/ExpenseCategoriesScreen.dart';
 import 'package:intl/intl.dart';
 
 class Add_Screen extends StatefulWidget {
-  final Expense? expense; // Add this line
+  final Expense? expense;
 
   const Add_Screen({super.key, this.expense});
 
@@ -67,8 +67,10 @@ class Add_ScreenState extends State<Add_Screen> {
   ];
   final List<String> reminderOptions = [
     'Never',
-    '1 Minute Before',
-    '1 Day Before'
+    '30 seconds Before',
+    '1 Day Before',
+    '3 Days Before',
+    '1 Week Before'
   ];
 
   Future<void> addExpense(Expense expense) async {
@@ -77,7 +79,6 @@ class Add_ScreenState extends State<Add_Screen> {
     await ref.child(userId).push().set(expense.toJson());
   }
 
-  // Example Input Field Styling
   Widget inputField(String label, TextEditingController controller,
       {TextInputType keyboardType = TextInputType.text, IconData? prefixIcon}) {
     return TextFormField(
@@ -110,6 +111,7 @@ class Add_ScreenState extends State<Add_Screen> {
     );
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -122,10 +124,9 @@ class Add_ScreenState extends State<Add_Screen> {
           padding: const EdgeInsets.all(16.0),
           child: Card(
             color: Colors.blue.shade200,
-            // Wrap input fields with a Card widget
-            elevation: 4.0, // Add elevation for a shadow effect
+            elevation: 4.0,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12.0), // Add rounded corners
+              borderRadius: BorderRadius.circular(12.0),
             ),
             child: Padding(
               padding: const EdgeInsets.all(16.0),
@@ -140,8 +141,6 @@ class Add_ScreenState extends State<Add_Screen> {
                   date_time(),
                   SizedBox(height: 16),
                   recurrenceField(),
-                  SizedBox(height: 16),
-                  reminderField(),
                   SizedBox(height: 24),
                   save(),
                 ],
@@ -216,6 +215,7 @@ class Add_ScreenState extends State<Add_Screen> {
   }
 
   void saveExpense() async {
+    print("Saving expense with recurrence: $selectedRecurrence");
     DatabaseReference ref = FirebaseDatabase.instance.ref().child("expenses");
     String userId = FirebaseAuth.instance.currentUser?.uid ?? 'anonymous';
 
@@ -259,7 +259,6 @@ class Add_ScreenState extends State<Add_Screen> {
 
   void updateExpenseInDatabase(Expense expense) {
     if (expense.key == null) {
-      // Handle the error or return early
       print("Expense key is null. Cannot update the expense in the database.");
       return;
     }
@@ -312,17 +311,14 @@ class Add_ScreenState extends State<Add_Screen> {
 
   Widget save() {
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: 30), // Increase horizontal padding to enlarge the button
+      padding: const EdgeInsets.symmetric(horizontal: 30),
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue, // Changed background color to blue
-          padding: EdgeInsets.symmetric(
-              vertical: 16,
-              horizontal: 40), // Increased padding for larger size
+          backgroundColor: Colors.blue,
+          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 40),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           textStyle: TextStyle(
-            fontSize: 20, // Increased font size
+            fontSize: 20,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -333,19 +329,19 @@ class Add_ScreenState extends State<Add_Screen> {
   }
 
   String determineType(String categoryType) {
-    return categoryType; // Simply return the type passed with the category
+    return categoryType;
   }
 
   Widget date_time() {
     // TextEditingController to display the selected date
-    TextEditingController dateController =
-        TextEditingController(text: DateFormat('yyyy-MM-dd').format(date));
+    TextEditingController dateController = TextEditingController(
+        text: DateFormat('yyyy-MM-dd').format(selectedDate!));
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 15),
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white, // Set the background color to white
+          color: Colors.white,
           borderRadius: BorderRadius.circular(10),
           border: Border.all(
             width: 1,
@@ -354,17 +350,17 @@ class Add_ScreenState extends State<Add_Screen> {
         ),
         child: TextFormField(
           controller: dateController,
-          readOnly: true, // Prevents keyboard from showing
+          readOnly: true,
           decoration: InputDecoration(
             contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
             labelText: 'Date',
             suffixIcon: Icon(Icons.calendar_today, color: Colors.teal),
-            border: InputBorder.none, // Remove the border
+            border: InputBorder.none,
           ),
           onTap: () async {
             DateTime? newDate = await showDatePicker(
               context: context,
-              initialDate: date,
+              initialDate: selectedDate!,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
               builder: (BuildContext context, Widget? child) {
@@ -381,7 +377,7 @@ class Add_ScreenState extends State<Add_Screen> {
             );
             if (newDate != null) {
               setState(() {
-                date = newDate;
+                selectedDate = newDate;
                 // Update the text field with the new date
                 dateController.text = DateFormat('yyyy-MM-dd').format(newDate);
               });
@@ -452,15 +448,15 @@ class Add_ScreenState extends State<Add_Screen> {
         focusNode: amount_,
         controller: amount_c,
         decoration: InputDecoration(
-          filled: true, // Fill the input field with color
-          fillColor: Colors.white, // Set the background color to white
+          filled: true,
+          fillColor: Colors.white,
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           labelText: 'Amount',
-          prefixText: '£ ', // Add £ symbol as prefix
+          prefixText: '£ ',
           prefixStyle: TextStyle(
             color: Colors.black,
             fontSize: 17,
-          ), // Style for the £ symbol
+          ),
           labelStyle: TextStyle(
             fontSize: 17,
             color: Colors.grey.shade600,
@@ -477,7 +473,7 @@ class Add_ScreenState extends State<Add_Screen> {
             borderSide: BorderSide(
               width: 2,
               color: Colors.teal,
-            ), // Updated color for focus
+            ),
           ),
         ),
       ),
@@ -502,8 +498,8 @@ class Add_ScreenState extends State<Add_Screen> {
             focusNode: ex,
             controller: expalin_C,
             decoration: InputDecoration(
-              hintText: 'Explain', // Set the hint text to 'Explain'
-              hintStyle: TextStyle(color: Colors.grey), // Hint text color
+              hintText: 'Explain',
+              hintStyle: TextStyle(color: Colors.grey),
               border: InputBorder.none,
             ),
             maxLines: null,
@@ -543,7 +539,7 @@ class Add_ScreenState extends State<Add_Screen> {
                 color: Colors.grey.withOpacity(0.2),
                 spreadRadius: 1,
                 blurRadius: 3,
-                offset: Offset(0, 2), // Changes position of shadow
+                offset: Offset(0, 2),
               ),
             ],
           ),
@@ -586,8 +582,8 @@ class Add_ScreenState extends State<Add_Screen> {
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           labelText: 'Reminder',
-          filled: true, // Fill the background with color
-          fillColor: Colors.white, // Set the background color to white
+          filled: true,
+          fillColor: Colors.white,
           border: OutlineInputBorder(),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
@@ -619,8 +615,8 @@ class Add_ScreenState extends State<Add_Screen> {
         decoration: InputDecoration(
           contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           labelText: 'Recurrence',
-          filled: true, // Fill the background with color
-          fillColor: Colors.white, // Set the background color to white
+          filled: true,
+          fillColor: Colors.white,
           border: OutlineInputBorder(),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
@@ -634,7 +630,8 @@ class Add_ScreenState extends State<Add_Screen> {
         value: selectedRecurrence,
         onChanged: (String? newValue) {
           setState(() {
-            selectedRecurrence = newValue!;
+            selectedRecurrence = newValue;
+            print("Recurrence updated to: $newValue");
           });
         },
         items: recurrenceOptions.map<DropdownMenuItem<String>>((String value) {

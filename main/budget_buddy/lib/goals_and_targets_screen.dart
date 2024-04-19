@@ -67,40 +67,6 @@ class _GoalsAndTargetsScreenState extends State<GoalsAndTargetsScreen> {
     }
   }
 
-  Widget _buildCategoryTargetsContainer() {
-    // You can customize this method to fit the specific layout and data for category targets.
-    return Container(
-      padding: EdgeInsets.all(16.0),
-      margin:
-          EdgeInsets.only(top: 20.0), // Added some margin for visual separation
-      decoration: BoxDecoration(
-        color: Colors.blue.shade400,
-        borderRadius: BorderRadius.circular(12.0),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.shade200,
-            blurRadius: 5.0,
-            spreadRadius: 2.0,
-            offset: Offset(2, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Category Targets',
-            style: TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16),
-          ),
-          SizedBox(height: 8),
-          // Assuming buildCategoryTargets() builds the actual list of category targets.
-          buildCategoryTargets(),
-        ],
-      ),
-    );
-  }
-
   Widget buildCategoryTargets() {
     // Your implementation goes here, similar to what you had before.
     // This widget can be a ListView.builder or a simpler Column with children depending on your needs.
@@ -193,7 +159,6 @@ class _GoalsAndTargetsScreenState extends State<GoalsAndTargetsScreen> {
         child: Column(
           children: [
             _buildProgressContainer(context),
-            _buildCategoryTargetsContainer(),
             // If you have additional content to include outside the blue container, add it here...
           ],
         ),

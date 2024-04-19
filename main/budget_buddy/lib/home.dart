@@ -164,7 +164,7 @@ class HomeState extends State<Home> {
     if (picked != null && picked != selectedDate) {
       setState(() {
         selectedDate = picked;
-        filterExpensesByPeriod(); // Ensure to call this to filter based on the new date
+        filterExpensesByPeriod();
       });
     }
   }
@@ -228,7 +228,6 @@ class HomeState extends State<Home> {
             }
           });
         } else {
-          // Show details popup if not in edit mode
           _showExpenseDetailsPopup(context, history);
         }
       },
@@ -337,8 +336,7 @@ class HomeState extends State<Home> {
           padding:
               EdgeInsets.only(left: 16.0, top: 16.0, right: 16.0, bottom: 8.0),
           child: Row(
-            mainAxisAlignment:
-                MainAxisAlignment.spaceBetween, // Align items on opposite ends
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // "History" title
               Text(
@@ -346,8 +344,7 @@ class HomeState extends State<Home> {
                 style: TextStyle(
                   fontSize: 24.0,
                   fontWeight: FontWeight.bold,
-                  color:
-                      Colors.blue.shade800, // Adjust color to match your theme
+                  color: Colors.blue.shade800,
                 ),
               ),
               // Edit and Delete Selected Buttons
@@ -371,7 +368,7 @@ class HomeState extends State<Home> {
                           EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     ),
                   ),
-                  SizedBox(width: 8), // Space between buttons
+                  SizedBox(width: 8),
                   if (isEditMode)
                     ElevatedButton.icon(
                       onPressed: deleteSelectedExpenses,
@@ -557,14 +554,13 @@ class HomeState extends State<Home> {
       expensesGroupedByMonth = groupExpensesByMonth(yearlyExpenses);
     }
 
-    // Force UI update
     setState(() {});
   }
 
   Widget _summaryItem(String title, String amount, Color textColor) {
     return Container(
-      width: 120, // Fixed width
-      height: 100, // Fixed height
+      width: 120,
+      height: 100,
       padding: EdgeInsets.symmetric(vertical: 8, horizontal: 10),
       decoration: BoxDecoration(
         color: Colors.blue.shade900, // Background color of the box
@@ -577,31 +573,25 @@ class HomeState extends State<Home> {
             offset: Offset(0, 1), // Position of the shadow
           ),
         ],
-        border: Border.all(
-            color: Colors.white, width: 2), // White border around the box
+        border: Border.all(color: Colors.white, width: 2),
       ),
       child: Column(
-        mainAxisAlignment:
-            MainAxisAlignment.center, // Center the content vertically
-        children: [
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
           Text(
             title,
-            textAlign: TextAlign.center, // Center the text horizontally
             style: TextStyle(
-              fontWeight:
-                  FontWeight.bold, // Increased font weight for the title
-              fontSize: 15, // Increased font size for the title
-              color: Colors.white, // Color of the title
+              fontSize: 15.2, // Reduced font size for the title
+              fontWeight: FontWeight.bold,
+              color: textColor.withOpacity(0.7), // Lighten the color for titles
             ),
           ),
-          SizedBox(height: 5),
           Text(
             amount,
-            textAlign: TextAlign.center, // Center the text horizontally
             style: TextStyle(
-              fontWeight: FontWeight.bold, // Bold text for the amount
-              fontSize: 20, // Increased font size for the amount
-              color: textColor, // Dynamic text color passed to the method
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
           ),
         ],
@@ -622,14 +612,12 @@ class HomeState extends State<Home> {
                   delegate: SliverChildBuilderDelegate(
                     (BuildContext context, int index) {
                       Expense expense = filteredExpenses[index];
-                      // Use your existing _transactionTile method or widget
                       return _transactionTile(expense);
                     },
                     childCount: filteredExpenses.length,
                   ),
                 )
               : SliverFillRemaining(
-                  // This will fill the remaining space if there's no data
                   child: Center(
                     child: Text(
                       "No data for this period",
@@ -653,8 +641,7 @@ class HomeState extends State<Home> {
         backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomAppBar(
-        // Omitting shape property
-        color: Colors.white, // Set your desired color
+        color: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
@@ -693,12 +680,10 @@ class HomeState extends State<Home> {
       builder: (BuildContext context) {
         return Theme(
           data: ThemeData.light().copyWith(
-            dialogBackgroundColor:
-                Colors.blue.shade50, // Light blue background color
+            dialogBackgroundColor: Colors.blue.shade50,
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
-                foregroundColor:
-                    Colors.blue.shade600, // Dark blue text color for buttons
+                foregroundColor: Colors.blue.shade600,
               ),
             ),
           ),

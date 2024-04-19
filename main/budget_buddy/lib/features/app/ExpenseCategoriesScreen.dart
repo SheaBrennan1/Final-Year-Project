@@ -148,7 +148,6 @@ final List<Map<String, dynamic>> expenseCategories = [
     "category": "Wants",
     "type": "Expense"
   },
-  // ... other categories with their corresponding image paths
 ];
 
 final List<Map<String, dynamic>> incomeCategories = [
@@ -176,7 +175,6 @@ final List<Map<String, dynamic>> incomeCategories = [
     "color": Colors.deepPurple,
     "type": "Income"
   },
-  // ... other income categories with their corresponding image paths
 ];
 
 class ExpenseCategoriesScreen extends StatefulWidget {
@@ -207,10 +205,10 @@ class ExpenseCategoriesScreen extends StatefulWidget {
 
     if (category.isNotEmpty && category.containsKey('color')) {
       print("Category: $categoryName, Color: ${category['color']}");
-      return category['color']; // return the color directly
+      return category['color'];
     } else {
       print("Category: $categoryName, Color: ${category['color']}");
-      return Colors.grey; // Default color if no match found or color is null
+      return Colors.grey;
     }
   }
 }

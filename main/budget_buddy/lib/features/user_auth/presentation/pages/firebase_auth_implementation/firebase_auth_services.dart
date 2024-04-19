@@ -52,7 +52,6 @@ class FirebaseAuthService {
         idToken: googleAuth.idToken,
       );
 
-      // Preliminary check to see if email is already associated with a user.
       final signInMethods = await FirebaseAuth.instance
           .fetchSignInMethodsForEmail(googleUser.email);
       if (signInMethods.isEmpty) {
@@ -92,7 +91,6 @@ class FirebaseAuthService {
     return null;
   }
 
-  // Add a sign out method for convenience
   Future<void> signOut() async {
     await _googleSignIn.signOut();
     await _auth.signOut();

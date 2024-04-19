@@ -102,7 +102,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           'Budgets',
           style: TextStyle(
             fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold, // Adjust as needed
+            fontWeight: FontWeight.bold,
           ),
         ),
         backgroundColor: Colors.blue,
@@ -113,7 +113,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
           children: [
             // Enclosing the descriptive section within a blue Card
             Card(
-              color: Colors.blue.shade100, // Light blue card for soft contrast
+              color: Colors.blue.shade100,
               margin: EdgeInsets.all(16.0), // Margin around the card
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
@@ -125,8 +125,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                       style: TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        color:
-                            Colors.blue.shade900, // Dark blue text for contrast
+                        color: Colors.blue.shade900,
                       ),
                     ),
                     SizedBox(height: 8),
@@ -134,8 +133,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
                       'Create and track your budgets to manage your spending more effectively. Set up a budget for different categories, such as groceries, bills, or entertainment, and monitor your expenses to stay on track.',
                       style: TextStyle(
                         fontSize: 16,
-                        color: Colors
-                            .black, // Slightly darker blue text for readability
+                        color: Colors.black,
                       ),
                     ),
                   ],
@@ -207,16 +205,14 @@ class _BudgetScreenState extends State<BudgetScreen> {
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors
-                      .blue, // Updated from 'primary' to 'backgroundColor'
+                  backgroundColor: Colors.blue,
                   padding: EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                   textStyle:
                       TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
                 child: Text(
                   'Create a new budget',
-                  style:
-                      TextStyle(color: Colors.black), // Set font color to black
+                  style: TextStyle(color: Colors.black),
                 ),
               ),
             ),
@@ -233,8 +229,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
         backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomAppBar(
-        // Omitting shape property
-        color: Colors.white, // Set your desired color
+        color: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
@@ -269,9 +264,9 @@ class _BudgetScreenState extends State<BudgetScreen> {
   Widget _budgetCard(Budget budget, bool isExpired) {
     // Wrap the LinearProgressIndicator in a FutureBuilder
     return FutureBuilder<double>(
-      future: getTotalSpent(budget), // This is your asynchronous operation
+      future: getTotalSpent(budget),
       builder: (context, snapshot) {
-        double progress = 0.0; // Default progress value
+        double progress = 0.0;
 
         if (snapshot.hasData) {
           final double totalSpent = snapshot.data!;
@@ -298,10 +293,7 @@ class _BudgetScreenState extends State<BudgetScreen> {
               children: [
                 SizedBox(height: 10),
                 LinearProgressIndicator(
-                  value: isExpired
-                      ? 1.0
-                      : progress.clamp(
-                          0.0, 1.0), // Clamp to ensure it's within valid range
+                  value: isExpired ? 1.0 : progress.clamp(0.0, 1.0),
                   backgroundColor: Colors.grey[400],
                   valueColor: AlwaysStoppedAnimation<Color>(
                       isExpired ? Colors.red : Colors.blue),

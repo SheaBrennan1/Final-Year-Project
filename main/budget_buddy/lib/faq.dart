@@ -19,11 +19,11 @@ class _FAQScreenState extends State<FAQScreen> {
           'FAQ',
           style: TextStyle(
             fontFamily: 'Roboto',
-            fontWeight: FontWeight.bold, // Adjust as needed
+            fontWeight: FontWeight.bold,
           ),
         ),
         centerTitle: true,
-        backgroundColor: Colors.blue, // Customize with your color
+        backgroundColor: Colors.blue,
       ),
       body: ListView(
         padding: EdgeInsets.all(8.0),

@@ -51,9 +51,7 @@ class _BudgetViewScreenState extends State<BudgetViewScreen> {
               _buildBudgetSummaryCard(theme),
               const SizedBox(height: 12),
               // Conditionally show the category spending details or the standard budget breakdown
-              widget.budget.type == BudgetType.standard
-                  ? _buildStandardBudgetDetails()
-                  : _buildCategorySpendingDetails(theme),
+              _buildCategorySpendingDetails(theme),
             ],
           ),
         ),
@@ -68,8 +66,7 @@ class _BudgetViewScreenState extends State<BudgetViewScreen> {
         backgroundColor: Colors.blue,
       ),
       bottomNavigationBar: BottomAppBar(
-        // Omitting shape property
-        color: Colors.white, // Set your desired color
+        color: Colors.white,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: <Widget>[
@@ -106,8 +103,6 @@ class _BudgetViewScreenState extends State<BudgetViewScreen> {
     DatabaseReference ref = FirebaseDatabase.instance.ref('expenses/$userId');
     Map<String, double> spendingPerCategory = {};
 
-    // Firebase Realtime Database doesn't support direct querying by date range in the same way as Firestore.
-    // You'd fetch all expenses and then filter them client-side. This may not be efficient for a large dataset.
     DatabaseEvent event = await ref.once();
 
     if (event.snapshot.exists) {
@@ -132,6 +127,15 @@ class _BudgetViewScreenState extends State<BudgetViewScreen> {
     }
 
     return spendingPerCategory;
+  }
+
+  String getCategoryImagePath(String category) {
+    switch (category.toLowerCase()) {
+      case 'food':
+        return 'assets/images/Food.png';
+      default:
+        return ''; // Return a default image or empty if not found
+    }
   }
 
   Widget _buildCategorySpendingDetails(ThemeData theme) {
@@ -198,45 +202,6 @@ class _BudgetViewScreenState extends State<BudgetViewScreen> {
           ],
         );
       },
-    );
-  }
-
-// Example function to get image path for a category
-  String getCategoryImagePath(String category) {
-    // Placeholder for your actual logic
-    switch (category.toLowerCase()) {
-      case 'food':
-        return 'assets/images/Food.png';
-      // Add more cases as needed
-      default:
-        return ''; // Return a default image or empty if not found
-    }
-  }
-
-  Widget _buildStandardBudgetDetails() {
-    // Mapping standard budget categories to icons
-    Map<String, IconData> standardCategoryIcons = {
-      "Needs": Icons.home,
-      "Wants": Icons.shopping_cart,
-      "Savings": Icons.account_balance_wallet,
-    };
-
-    // Widget to display budget details for standard categories
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: Text(
-            'Standard Budget Breakdown',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-        ),
-        _buildStandardCategoryDetail("Needs", standardCategoryIcons["Needs"]!),
-        _buildStandardCategoryDetail("Wants", standardCategoryIcons["Wants"]!),
-        _buildStandardCategoryDetail(
-            "Savings", standardCategoryIcons["Savings"]!),
-      ],
     );
   }
 
@@ -516,6 +481,7 @@ class _BudgetViewScreenState extends State<BudgetViewScreen> {
                 }
 
                 double totalSpent = snapshot.data ?? 0.0;
+                print(totalSpent);
                 double remainingBudget = totalAllocated - totalSpent;
                 bool isOverBudget = remainingBudget < 0;
 
